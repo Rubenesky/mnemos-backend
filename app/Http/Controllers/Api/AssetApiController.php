@@ -126,6 +126,19 @@ class AssetApiController extends Controller
         ]);
 
         if (array_key_exists('is_public', $validated)) {
+            if ($validated['is_public'] === true) {
+                $blockingConsents = $asset->consents()
+                    ->whereIn('status', ['denied', 'pending'])
+                    ->count();
+
+                if ($blockingConsents > 0) {
+                    return response()->json([
+                        'message' => 'Cannot publish this asset. It has ' . $blockingConsents . ' unresolved consent record(s).',
+                        'error'   => 'consent_required',
+                    ], 422);
+                }
+            }
+
             $asset->update(['is_public' => $validated['is_public']]);
         }
 

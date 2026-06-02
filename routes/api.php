@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AssetApiController;
 use App\Http\Controllers\Api\AuthApiController;
+use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\PublicGalleryController;
 use App\Http\Controllers\Api\RAGController;
 use App\Http\Controllers\Api\SearchApiController;
@@ -62,4 +63,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // RAG — Chat con la base de datos
     Route::post('/rag', [RAGController::class, 'query'])->middleware('throttle:10,1');
+
+    // Consent management (GDPR) — export route BEFORE apiResource to avoid 'export' being treated as an ID
+    Route::get('consents/export/csv', [ConsentController::class, 'exportCsv']);
+    Route::apiResource('consents', ConsentController::class);
+    Route::get('assets/{id}/publication-check', [ConsentController::class, 'publicationCheck']);
 });
