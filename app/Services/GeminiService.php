@@ -24,7 +24,7 @@ class GeminiService
 
     public function generateAssetMetadata(string $filename, string $mimeType, ?string $storagePath = null, ?string $cloudinaryUrl = null): array
     {
-        // Si es imagen, usamos Vision con la URL de Cloudinary o storage local
+        // For images, use Vision with the Cloudinary URL or local storage
         if (str_starts_with($mimeType, 'image/')) {
             if ($cloudinaryUrl) {
                 return $this->analyzeImageFromUrl($filename, $mimeType, $cloudinaryUrl);
@@ -42,11 +42,11 @@ class GeminiService
             $imageData = Http::get($imageUrl)->body();
             $base64    = base64_encode($imageData);
 
-            $prompt = "Analiza esta imagen y genera metadatos en formato JSON con exactamente estas claves:
-        - title: título descriptivo corto en español (máximo 60 caracteres)
-        - description: descripción detallada de lo que ves en la imagen en español (máximo 200 caracteres)
-        - tags: array de 5 etiquetas relevantes en español basadas en el contenido visual
-        Responde SOLO con el JSON, sin explicaciones ni formato markdown.";
+            $prompt = "Analyse this image and generate metadata in JSON format with exactly these keys:
+        - title: short descriptive title (maximum 60 characters)
+        - description: detailed description of what you see in the image (maximum 200 characters)
+        - tags: array of 5 relevant tags based on the visual content
+        Respond ONLY with the JSON, no explanations or markdown formatting.";
 
             $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
                 'contents' => [[
@@ -81,15 +81,15 @@ class GeminiService
     private function analyzeImageWithVision(string $filename, string $mimeType, string $storagePath): array
     {
         try {
-            // Leemos la imagen y la convertimos a base64
+            // Read the image and convert it to base64
             $imageData = Storage::disk('public')->get($storagePath);
             $base64    = base64_encode($imageData);
 
-            $prompt = "Analiza esta imagen y genera metadatos en formato JSON con exactamente estas claves:
-            - title: título descriptivo corto en español (máximo 60 caracteres)
-            - description: descripción detallada de lo que ves en la imagen en español (máximo 200 caracteres)
-            - tags: array de 5 etiquetas relevantes en español basadas en el contenido visual
-            Responde SOLO con el JSON, sin explicaciones ni formato markdown.";
+            $prompt = "Analyse this image and generate metadata in JSON format with exactly these keys:
+            - title: short descriptive title (maximum 60 characters)
+            - description: detailed description of what you see in the image (maximum 200 characters)
+            - tags: array of 5 relevant tags based on the visual content
+            Respond ONLY with the JSON, no explanations or markdown formatting.";
 
             $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
                 'contents' => [
@@ -132,12 +132,12 @@ class GeminiService
 
     private function analyzeByFilename(string $filename, string $mimeType): array
     {
-        $prompt = "Analiza este archivo con nombre '{$filename}' y tipo '{$mimeType}'.
-        Genera metadatos en formato JSON con exactamente estas claves:
-        - title: título descriptivo corto (máximo 60 caracteres)
-        - description: descripción útil (máximo 200 caracteres)
-        - tags: array de 3 a 5 etiquetas relevantes en español
-        Responde SOLO con el JSON, sin explicaciones ni formato markdown.";
+        $prompt = "Analyse this file with name '{$filename}' and type '{$mimeType}'.
+        Generate metadata in JSON format with exactly these keys:
+        - title: short descriptive title (maximum 60 characters)
+        - description: useful description (maximum 200 characters)
+        - tags: array of 3 to 5 relevant tags
+        Respond ONLY with the JSON, no explanations or markdown formatting.";
 
         try {
             $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
@@ -175,7 +175,7 @@ class GeminiService
     {
         return [
             'title'       => pathinfo($filename, PATHINFO_FILENAME),
-            'description' => 'Sin descripción generada.',
+            'description' => 'No description generated.',
             'tags'        => [],
         ];
     }

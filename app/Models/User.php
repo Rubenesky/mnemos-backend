@@ -51,36 +51,37 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // A user can own many assets
+    /** Returns all assets owned by this user. */
     public function assets(): HasMany
     {
         return $this->hasMany(Asset::class);
     }
 
-    // A user can have many activity log entries
+    /** Returns all activity log entries belonging to this user. */
     public function activityLogs(): HasMany
     {
         return $this->hasMany(ActivityLog::class);
     }
-    // Check whether the user has the admin role
+
+    /** Returns true if the user has the admin role. */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    // Check whether the user has the editor role
+    /** Returns true if the user has the editor role. */
     public function isEditor(): bool
     {
         return $this->role === 'editor';
     }
 
-    // Check whether the user has the viewer role
+    /** Returns true if the user has the viewer role. */
     public function isViewer(): bool
     {
         return $this->role === 'viewer';
     }
 
-    // Check whether the user has the given role
+    /** Returns true if the user's role matches the given role string. */
     public function hasRole(string $role): bool
     {
         return $this->role === $role;

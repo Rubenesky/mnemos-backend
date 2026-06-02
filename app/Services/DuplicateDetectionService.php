@@ -24,11 +24,11 @@ class DuplicateDetectionService
 
     public function findSimilar(int $assetId, string $description, array $tags): array
     {
-        if (empty($description) || $description === 'Sin descripción generada.') {
+        if (empty($description) || $description === 'No description generated.') {
             return [];
         }
 
-        // Obtenemos todos los assets procesados excepto el actual
+        // Get all processed assets except the current one
         $existingAssets = Asset::with('metadata')
             ->where('id', '!=', $assetId)
             ->where('status', 'processed')
@@ -43,7 +43,7 @@ class DuplicateDetectionService
             return [];
         }
 
-        // Preparamos los datos para comparar
+        // Prepare the data for comparison
         $assetsData = $existingAssets->map(function ($asset) {
             return [
                 'id'          => $asset->id,
@@ -53,22 +53,22 @@ class DuplicateDetectionService
             ];
         })->toArray();
 
-        $prompt = "Eres un sistema de detección de duplicados de activos digitales.
+        $prompt = "You are a duplicate detection system for digital assets.
 
-Nuevo asset subido:
-- Descripción: \"{$description}\"
+Newly uploaded asset:
+- Description: \"{$description}\"
 - Tags: " . implode(', ', $tags) . "
 
-Assets existentes:
+Existing assets:
 " . json_encode($assetsData, JSON_UNESCAPED_UNICODE) . "
 
-Analiza si el nuevo asset es similar a alguno de los existentes basándote en la descripción y tags.
-Considera similar si comparten el mismo tema, contenido visual o contexto (similaridad > 70%).
+Analyse whether the new asset is similar to any of the existing ones based on description and tags.
+Consider them similar if they share the same subject, visual content, or context (similarity > 70%).
 
-Responde SOLO con un JSON con este formato:
-{\"similar\": [{\"id\": 1, \"similarity\": 85, \"reason\": \"Mismo tipo de paisaje montañoso\"}]}
-Si no hay similares responde: {\"similar\": []}
-Solo JSON, sin explicaciones ni markdown.";
+Respond ONLY with a JSON in this format:
+{\"similar\": [{\"id\": 1, \"similarity\": 85, \"reason\": \"Same type of mountain landscape\"}]}
+If there are no similar assets respond: {\"similar\": []}
+JSON only, no explanations or markdown.";
 
         try {
             $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [

@@ -58,7 +58,7 @@ class AssetApiController extends Controller
 
         $file = $request->file('file');
 
-        // Detección de duplicado exacto por hash
+        // Exact duplicate detection by hash
         $fileHash      = md5_file($file->getRealPath());
         $existingAsset = Asset::where('file_hash', $fileHash)->first();
 
@@ -66,12 +66,12 @@ class AssetApiController extends Controller
             $existingAsset->load(['user', 'metadata', 'categories']);
             return response()->json([
                 'success'        => false,
-                'message'        => 'Este archivo ya existe en la plataforma.',
+                'message'        => 'This file already exists in the system.',
                 'existing_asset' => $this->formatAsset($existingAsset),
             ], 409);
         }
 
-        // Subir a Cloudinary
+        // Upload to Cloudinary
         $cloudinary       = app(CloudinaryService::class);
         $cloudinaryResult = $cloudinary->upload($file);
 
@@ -115,7 +115,7 @@ class AssetApiController extends Controller
     public function update(Request $request, Asset $asset): JsonResponse
     {
         if (auth()->user()->role === 'viewer') {
-            return response()->json(['success' => false, 'message' => 'Sin permiso.'], 403);
+            return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
         }
 
         $request->validate([
@@ -148,7 +148,7 @@ class AssetApiController extends Controller
         if (auth()->user()->role !== 'admin') {
             return response()->json([
                 'success' => false,
-                'message' => 'No tienes permiso para eliminar assets.',
+                'message' => 'You do not have permission to delete this asset.',
             ], 403);
         }
 
@@ -158,7 +158,7 @@ class AssetApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Asset eliminado correctamente.',
+            'message' => 'Asset deleted successfully.',
         ]);
     }
 
@@ -168,7 +168,7 @@ class AssetApiController extends Controller
         if (!$asset->metadata) {
             return response()->json([
                 'success' => false,
-                'message' => 'Este asset no tiene metadatos generados todavía.',
+                'message' => 'This asset has no generated metadata yet.',
             ], 422);
         }
 
@@ -182,7 +182,7 @@ class AssetApiController extends Controller
         if (empty($variants)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudieron generar variantes. Inténtalo de nuevo.',
+                'message' => 'Could not generate variants. Please try again.',
             ], 503);
         }
 
@@ -192,7 +192,7 @@ class AssetApiController extends Controller
         ]);
     }
 
-    // Formatea un asset para la respuesta JSON
+    // Format an asset for the JSON response
     private function formatAsset(Asset $asset): array
     {
         return [

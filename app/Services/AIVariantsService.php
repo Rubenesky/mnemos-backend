@@ -25,19 +25,19 @@ class AIVariantsService
     {
         $tagsStr = implode(', ', $tags);
 
-        $prompt = "Eres un experto en SEO y marketing de contenidos digitales.
+        $prompt = "You are an expert in SEO and digital content marketing.
 
-Dado este asset digital con los siguientes metadatos:
-- Título actual: \"{$title}\"
-- Descripción actual: \"{$description}\"
-- Tags actuales: {$tagsStr}
+Given this digital asset with the following metadata:
+- Current title: \"{$title}\"
+- Current description: \"{$description}\"
+- Current tags: {$tagsStr}
 
-Genera variantes mejoradas en formato JSON con exactamente estas claves:
-- titles: array de 3 títulos alternativos más SEO-friendly y descriptivos (máximo 60 caracteres cada uno)
-- descriptions: array de 2 descripciones mejoradas más detalladas y atractivas (máximo 200 caracteres cada una)
-- additional_tags: array de 5 tags adicionales relevantes que no están en los actuales
+Generate improved variants in JSON format with exactly these keys:
+- titles: array of 3 alternative titles that are more SEO-friendly and descriptive (maximum 60 characters each)
+- descriptions: array of 2 improved descriptions that are more detailed and engaging (maximum 200 characters each)
+- additional_tags: array of 5 additional relevant tags not already in the current tags
 
-Responde SOLO con el JSON, sin explicaciones ni markdown.";
+Respond ONLY with the JSON, no explanations or markdown.";
 
         try {
             $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [

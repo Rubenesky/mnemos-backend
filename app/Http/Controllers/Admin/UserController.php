@@ -33,7 +33,7 @@ class UserController extends Controller
 
         // Prevent an admin from removing their own admin role
         if ($user->id === auth()->id() && $request->role !== 'admin') {
-            return back()->with('error', 'No puedes cambiar tu propio rol de admin.');
+            return back()->with('error', 'You cannot change your own admin role.');
         }
 
         $user->update([
@@ -42,19 +42,19 @@ class UserController extends Controller
         ]);
 
         return redirect()->route('admin.users.index')
-                         ->with('success', 'Usuario actualizado correctamente.');
+                         ->with('success', 'User updated successfully.');
     }
 
     public function destroy(User $user)
     {
         // Prevent an admin from deleting their own account
         if ($user->id === auth()->id()) {
-            return back()->with('error', 'No puedes eliminar tu propia cuenta desde aquí.');
+            return back()->with('error', 'You cannot delete your own account from here.');
         }
 
         $user->delete();
 
         return redirect()->route('admin.users.index')
-                         ->with('success', 'Usuario eliminado correctamente.');
+                         ->with('success', 'User deleted successfully.');
     }
 }

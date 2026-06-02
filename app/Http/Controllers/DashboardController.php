@@ -16,7 +16,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Estadísticas generales
+        // General statistics
         $totalAssets    = Asset::count();
         $totalCategories = Category::count();
         $recentActivity = ActivityLog::with('user')
@@ -24,7 +24,7 @@ class DashboardController extends Controller
                                      ->take(5)
                                      ->get();
 
-        // Assets por tipo de archivo
+        // Assets by file type
         $assetsByType = Asset::select('mime_type', DB::raw('count(*) as total'))
                              ->groupBy('mime_type')
                              ->get()
@@ -35,7 +35,7 @@ class DashboardController extends Controller
                                  ];
                              });
 
-        // Assets subidos por día (últimos 7 días)
+        // Assets uploaded per day (last 7 days)
         $assetsByDay = Asset::select(
                                 DB::raw('DATE(created_at) as date'),
                                 DB::raw('count(*) as total')

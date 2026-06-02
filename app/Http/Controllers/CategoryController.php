@@ -45,7 +45,7 @@ class CategoryController extends Controller
         ]);
 
         return redirect()->route('categories.index')
-                         ->with('success', 'Categoría creada correctamente.');
+                         ->with('success', 'Category created successfully.');
     }
 
     public function edit(Category $category)
@@ -73,7 +73,7 @@ class CategoryController extends Controller
         ]);
 
         return redirect()->route('categories.index')
-                         ->with('success', 'Categoría actualizada correctamente.');
+                         ->with('success', 'Category updated successfully.');
     }
 
     public function destroy(Category $category)
@@ -81,6 +81,6 @@ class CategoryController extends Controller
         $category->delete();
 
         return redirect()->route('categories.index')
-                         ->with('success', 'Categoría eliminada correctamente.');
+                         ->with('success', 'Category deleted successfully.');
     }
 }

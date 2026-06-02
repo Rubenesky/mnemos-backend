@@ -23,19 +23,19 @@ class SearchApiController extends Controller
 
         $userQuery = $request->input('query');
 
-        // Parsear la query en lenguaje natural
+        // Parse the natural-language query into structured filters
         $nlSearch = new NaturalLanguageSearchService();
         $filters  = $nlSearch->parseQuery($userQuery);
 
-        // Si Gemini falló y no devolvió filtros, indicarlo
+        // If Gemini failed and returned no filters, report it
         if (empty($filters)) {
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudo procesar la búsqueda. Inténtalo de nuevo en unos segundos.',
+                'message' => 'Could not process the search. Please try again in a few seconds.',
             ], 503);
         }
 
-        // Construir la consulta con los filtros
+        // Build the query using the parsed filters
         $query = Asset::with(['user', 'metadata', 'categories']);
 
         if (!empty($filters['search'])) {

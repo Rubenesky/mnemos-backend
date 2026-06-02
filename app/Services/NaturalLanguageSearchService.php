@@ -23,51 +23,51 @@ class NaturalLanguageSearchService
 
     public function parseQuery(string $userQuery): array
     {
-        $prompt = "Eres un asistente experto en búsqueda de activos digitales. Tu tarea es convertir búsquedas en lenguaje natural a filtros estructurados.
+        $prompt = "You are an expert assistant for digital asset search. Your task is to convert natural-language searches into structured filters.
 
-    FILTROS DISPONIBLES:
-    - search: palabra clave para buscar. REGLAS IMPORTANTES:
-    * Usa siempre la RAÍZ de la palabra (sin plural, sin sufijos)
-    * Ejemplos: 'paisajes'→'paisaj', 'montañas'→'montaña', 'logos'→'logo', 'fotografías'→'fotograf', 'edificios'→'edifici', 'personas'→'person', 'animales'→'animal', 'coches'→'coche', 'árboles'→'árbol'
-    * Si hay varias palabras clave elige la MÁS ESPECÍFICA
-    * Ignora palabras genéricas como 'archivo', 'imagen', 'foto', 'documento', 'fichero'
-    - type: SOLO estos valores exactos:
-    * 'image' → cuando el usuario mencione: imagen, foto, fotografía, ilustración, captura, screenshot, png, jpg, jpeg, gif, svg, avif, webp
-    * 'application/pdf' → cuando mencione: pdf, documento pdf, archivo pdf
-    * 'video' → cuando mencione: vídeo, video, mp4, mov, avi
-    * No incluir si no está claro el tipo
-    - status: SOLO 'processed' o 'pending'
-    * 'processed' → procesado, procesada, con metadatos, analizado
-    * 'pending' → pendiente, sin procesar, sin analizar
-    * No incluir si no se menciona
-    - date_from: fecha de inicio en formato Y-m-d
-    * 'hoy' → " . now()->format('Y-m-d') . "
-    * 'esta semana' → " . now()->startOfWeek()->format('Y-m-d') . "
-    * 'este mes' → " . now()->startOfMonth()->format('Y-m-d') . "
-    * 'este año' → " . now()->startOfYear()->format('Y-m-d') . "
-    * 'ayer' → " . now()->subDay()->format('Y-m-d') . "
-    * 'última semana' → " . now()->subWeek()->format('Y-m-d') . "
-    * 'último mes' → " . now()->subMonth()->format('Y-m-d') . "
-    - date_to: fecha fin en formato Y-m-d (solo si se especifica un rango)
+    AVAILABLE FILTERS:
+    - search: keyword to search for. IMPORTANT RULES:
+    * Always use the ROOT of the word (no plural, no suffixes)
+    * Examples: 'landscapes'→'landscape', 'mountains'→'mountain', 'logos'→'logo', 'photographs'→'photograph', 'buildings'→'building', 'people'→'person', 'animals'→'animal', 'cars'→'car', 'trees'→'tree'
+    * If there are multiple keywords, choose the MOST SPECIFIC one
+    * Ignore generic words like 'file', 'image', 'photo', 'document'
+    - type: ONLY these exact values:
+    * 'image' → when the user mentions: image, photo, photograph, illustration, screenshot, png, jpg, jpeg, gif, svg, avif, webp
+    * 'application/pdf' → when they mention: pdf, pdf document, pdf file
+    * 'video' → when they mention: video, mp4, mov, avi
+    * Do not include if the type is not clear
+    - status: ONLY 'processed' or 'pending'
+    * 'processed' → processed, with metadata, analysed
+    * 'pending' → pending, unprocessed, unanalysed
+    * Do not include if not mentioned
+    - date_from: start date in Y-m-d format
+    * 'today' → " . now()->format('Y-m-d') . "
+    * 'this week' → " . now()->startOfWeek()->format('Y-m-d') . "
+    * 'this month' → " . now()->startOfMonth()->format('Y-m-d') . "
+    * 'this year' → " . now()->startOfYear()->format('Y-m-d') . "
+    * 'yesterday' → " . now()->subDay()->format('Y-m-d') . "
+    * 'last week' → " . now()->subWeek()->format('Y-m-d') . "
+    * 'last month' → " . now()->subMonth()->format('Y-m-d') . "
+    - date_to: end date in Y-m-d format (only if a range is specified)
 
-    EJEMPLOS DE BÚSQUEDAS Y RESULTADOS ESPERADOS:
-    - 'fotos de montañas' → {\"type\": \"image\", \"search\": \"montaña\"}
-    - 'imágenes de paisajes subidas esta semana' → {\"type\": \"image\", \"search\": \"paisaj\", \"date_from\": \"" . now()->startOfWeek()->format('Y-m-d') . "\"}
-    - 'documentos pdf pendientes' → {\"type\": \"application/pdf\", \"status\": \"pending\"}
-    - 'logos de empresas procesados' → {\"type\": \"image\", \"search\": \"logo\", \"status\": \"processed\"}
-    - 'fotos subidas hoy' → {\"type\": \"image\", \"date_from\": \"" . now()->format('Y-m-d') . "\"}
-    - 'archivos de este mes' → {\"date_from\": \"" . now()->startOfMonth()->format('Y-m-d') . "\"}
-    - 'imágenes de personas sonriendo' → {\"type\": \"image\", \"search\": \"person\"}
-    - 'capturas de pantalla' → {\"type\": \"image\", \"search\": \"captura\"}
-    - 'vídeos recientes' → {\"type\": \"video\", \"date_from\": \"" . now()->subWeek()->format('Y-m-d') . "\"}
+    EXAMPLE SEARCHES AND EXPECTED RESULTS:
+    - 'mountain photos' → {\"type\": \"image\", \"search\": \"mountain\"}
+    - 'landscape images uploaded this week' → {\"type\": \"image\", \"search\": \"landscape\", \"date_from\": \"" . now()->startOfWeek()->format('Y-m-d') . "\"}
+    - 'pending pdf documents' → {\"type\": \"application/pdf\", \"status\": \"pending\"}
+    - 'processed company logos' → {\"type\": \"image\", \"search\": \"logo\", \"status\": \"processed\"}
+    - 'photos uploaded today' → {\"type\": \"image\", \"date_from\": \"" . now()->format('Y-m-d') . "\"}
+    - 'files from this month' → {\"date_from\": \"" . now()->startOfMonth()->format('Y-m-d') . "\"}
+    - 'images of smiling people' → {\"type\": \"image\", \"search\": \"person\"}
+    - 'screenshots' → {\"type\": \"image\", \"search\": \"screenshot\"}
+    - 'recent videos' → {\"type\": \"video\", \"date_from\": \"" . now()->subWeek()->format('Y-m-d') . "\"}
 
-    REGLAS GENERALES:
-    - Responde SOLO con JSON válido, sin explicaciones ni markdown
-    - Solo incluye los filtros que apliquen claramente
-    - Si la búsqueda es ambigua, usa solo 'search' con la palabra más relevante
-    - Nunca inventes filtros que no estén en la lista
+    GENERAL RULES:
+    - Respond ONLY with valid JSON, no explanations or markdown
+    - Only include filters that clearly apply
+    - If the search is ambiguous, use only 'search' with the most relevant word
+    - Never invent filters not in the list
 
-    El usuario busca: \"{$userQuery}\"";
+    The user is searching for: \"{$userQuery}\"";
 
         try {
             $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [

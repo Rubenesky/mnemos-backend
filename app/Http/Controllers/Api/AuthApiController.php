@@ -27,11 +27,11 @@ class AuthApiController extends Controller
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Las credenciales no son correctas.'],
+                'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        // Borramos tokens anteriores y creamos uno nuevo
+        // Revoke previous tokens and create a new one
         $user->tokens()->delete();
         $token = $user->createToken('api-token', ['*'], now()->addDays(7))->plainTextToken;
 
@@ -53,7 +53,7 @@ class AuthApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Sesión cerrada correctamente.',
+            'message' => 'Logged out successfully.',
         ]);
     }
 
