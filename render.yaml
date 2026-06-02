@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: dam-platform
+    env: php
+    buildCommand: composer install --no-dev && php artisan config:clear && php artisan route:cache && php artisan migrate --force
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT & php artisan queue:work --timeout=60 --tries=3 --sleep=3
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: postgres
+      - key: DB_USERNAME
+        value: postgres
+      - key: QUEUE_CONNECTION
+        value: database
