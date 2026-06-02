@@ -1,437 +1,234 @@
-# DAM Platform — Digital Asset Management
+# Mnemos
 
-![Tests](https://github.com/Rubenesky/dam-platform/actions/workflows/tests.yml/badge.svg)
+### *Open memory for organizations that matter*
 
-Plataforma web de gestión de activos digitales desarrollada con Laravel 10, con integración de IA para generación automática de metadatos.
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![PHP 8.2](https://img.shields.io/badge/PHP-8.2-blue.svg)](https://www.php.net/)
+[![Laravel 10](https://img.shields.io/badge/Laravel-10-red.svg)](https://laravel.com/)
+[![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen.svg)](https://github.com/rubenesky/mnemos-backend)
 
-## 🌐 Demo en producción
+---
 
-**Backend:** https://dam-platform.onrender.com
+Mnemos is a free, open-source digital archive system built for NGOs, cultural foundations, educational institutions, and community organizations. It gives your team a single, searchable home for all your photos, videos, and documents — with GDPR consent tracking and AI-powered accessibility built in.
 
-**Frontend:** https://dam-platform-ai.netlify.app
+---
 
-> ⚠️ El servidor puede tardar 30-50 segundos en arrancar la primera vez por ser el plan gratuito de Render.
+## The Problem
 
-## 🚀 Características principales
+Most organizations are losing their institutional memory right now, and they do not know it.
 
-- **Autenticación completa** — registro, login, logout con Laravel Breeze
-- **Sistema de roles** — Admin, Editor y Viewer con middleware propio
-- **Gestión de assets** — subida, listado, edición y borrado de archivos
-- **IA integrada** — generación automática de título, descripción y etiquetas con Google Gemini
-- **Gestión de categorías** — categorías y subcategorías para organizar assets
-- **Panel de administración** — gestión de usuarios y roles
-- **API REST** — endpoints con autenticación por token (Sanctum)
-- **Dashboard** — estadísticas y gráficos en tiempo real (Chart.js)
-- **Activity log** — registro de todas las acciones de los usuarios
-- **Tests** — suite de tests de control de acceso con PHPUnit
+**1. No structured archive**
+Photos, videos, and documents are scattered across WhatsApp groups, shared Google Drive folders, and email threads that span years. When someone asks *"do we have a photo from the 2019 campaign?"* the honest answer is usually *"somewhere, maybe."* There is no way to search, no consistent naming, and no single place to look.
 
-## 📸 Capturas de pantalla
+**2. No consent tracking**
+Organizations regularly publish images of volunteers, program participants, and minors — without any documented record that consent was obtained. Under GDPR, this is not just a procedural gap: it is legal exposure. When an audit or a complaint arrives, there is no paper trail to produce.
 
-### Dashboard con estadísticas y gráficos
+**3. Technical barrier**
+Professional digital archive tools — Canto, Bynder, Brandfolder — cost thousands of euros per year and require a dedicated IT department to install, configure, and maintain. They are built for marketing teams at corporations, not for a team of five running after-school programs.
 
-![Dashboard](screenshots/01-dashboard.jpg)
+Mnemos removes all three barriers. It is free, installs in one command, and is designed to be used by people who are not technical.
 
-### Listado de assets con filtros
+---
 
-![Assets](screenshots/03-assets-list.jpg)
+## 🏛️ A Real Use Case
 
-### ✨ Gemini Vision — Análisis visual real de imágenes
+The Fundació Memòria Viva in Lleida has spent 20 years collecting photographs, oral histories, and handwritten documents from elderly residents — an irreplaceable record of mid-20th century rural life in Catalonia. For most of that time, those materials lived in cardboard boxes, external hard drives, and a shared Dropbox folder that nobody fully understood. Volunteers came and went; institutional knowledge walked out the door with them.
 
-<img src="screenshots/07-gemini-vision-detail.jpg" width="800" alt="Gemini Vision Detail"/>
+With Mnemos, the foundation ingests a digitized photograph, and the system automatically generates an accessible description of its contents via AI — a medieval farmhouse at dusk, three women sorting grain, a child watching from a doorway. That description makes the image findable by anyone searching "farmhouse" or "harvest" years later. Consent records for every living person pictured are tracked directly in the system, color-coded by status, and blocked from public publication until documented. A public gallery URL lets the foundation share curated collections with researchers and journalists without requiring any login. And when a new volunteer joins for the summer, they get a temporary Volunteer role that expires automatically the day they leave — no forgotten admin accounts, no manual cleanup.
 
-<img src="screenshots/07b-gemini-vision-detail-zoom.jpg" width="800" alt="Gemini Vision Detail Zoom"/>
+This is what Mnemos is for.
 
-### ✨ Gemini Vision — Otro ejemplo
+---
 
-<img src="screenshots/09-gemini-vision-example2.jpg" width="800" alt="Gemini Vision Example"/>
+## ✨ Features
 
-<img src="screenshots/09b-gemini-vision-example2-zoom.jpg" width="800" alt="Gemini Vision Example Zoom"/>
+**1. Public Gallery**
+Share asset collections publicly without requiring a login. Each collection gets its own shareable URL. Ideal for sharing press kits, exhibitions, or open archives with the outside world.
 
-### Vista detalle con metadatos generados por IA
+**2. 🔒 GDPR Consent Panel**
+Track consent status per asset with a color-coded dashboard: obtained (green), pending (yellow), denied (red). Assets without documented consent are automatically blocked from public publication. Audit-ready at any time.
 
-![Asset Detail](screenshots/04-asset-detail-ai.jpg)
+**3. 🚀 Zero-tech Install**
+One command gets you running: `./install.sh`. No server configuration knowledge required. Docker handles everything. If you can open a terminal and paste a command, you can install Mnemos.
 
-### Panel de administración de usuarios
+**4. AI Auto Alt-text**
+Every image you upload automatically receives an accessibility description generated by Google Gemini Vision. This makes your archive screen-reader compatible and improves searchability — without any manual work.
 
-![Admin Users](screenshots/08-admin-users.jpg)
+**5. Volunteer Role**
+A temporary access level between Viewer and Editor, with a configurable expiry date. Perfect for interns, short-term project volunteers, or students on placement. Access disappears automatically when the period ends.
 
-### Gestión de categorías
+**6. Multilingual**
+Full Spanish and English support throughout the interface, powered by Laravel's i18n system. More languages can be added by the community.
 
-![Categories](screenshots/11-categories.jpg)
+---
 
-### API REST en Postman
+## Tech Stack
 
-![API Postman](screenshots/12-api-postman.jpg)
+| Layer | Technology |
+|---|---|
+| Backend | PHP 8.2 / Laravel 10 |
+| Database | MySQL 8 |
+| API Authentication | Laravel Sanctum |
+| Asset Storage and CDN | Cloudinary |
+| AI (metadata, alt-text, search, chat) | Google Gemini |
+| Deployment | Docker Compose (optional) |
+| Tests | Pest 2.x |
 
-### 🤖 RAG — Chat con la base de datos
+---
 
-![RAG Inicio](screenshots/15-rag-inicio.jpg)
+## Installation
 
-![RAG Conversación](screenshots/16-rag-conversacion.jpg)
+### Quick start with Docker (recommended)
 
-## 🏗️ Arquitectura
-
-### Sistema completo
-
-```mermaid
-graph TB
-    subgraph FE["🌐 Frontend — Netlify"]
-        VUE["Vue 3 SPA<br/>Pinia · Vue Router · Axios"]
-    end
-
-    subgraph BE["⚙️ Backend — Render"]
-        API["Laravel 10 API<br/>Sanctum · Rate limiting"]
-        WORKER["Queue Worker<br/>ProcessAssetAI Job"]
-    end
-
-    subgraph EXT["☁️ Servicios externos"]
-        CLOUDINARY["Cloudinary<br/>Almacenamiento de archivos"]
-        GEMINI["Google Gemini API<br/>Vision · NLP · RAG · Variants"]
-        SUPABASE["Supabase<br/>PostgreSQL"]
-    end
-
-    VUE -->|"REST API (HTTPS)"| API
-    API -->|"Upload archivo"| CLOUDINARY
-    CLOUDINARY -->|"URL pública"| API
-    API -->|"Dispatch job"| WORKER
-    WORKER -->|"Analizar imagen / NLP"| GEMINI
-    GEMINI -->|"Metadatos generados"| WORKER
-    WORKER -->|"Guardar metadatos"| SUPABASE
-    API -->|"Leer / escribir"| SUPABASE
-```
-
-### Flujo de upload asíncrono
-
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant F as Frontend
-    participant A as API Laravel
-    participant C as Cloudinary
-    participant Q as Queue Worker
-    participant G as Gemini IA
-
-    U->>F: Selecciona archivo
-    F->>A: POST /api/assets
-    A->>C: Sube archivo
-    C-->>A: cloudinary_url
-    A->>Q: Dispatch ProcessAssetAI
-    A-->>F: 201 {status: "pending"}
-    F->>F: Inicia polling cada 3s
-    Q->>G: Analiza imagen con Vision
-    G-->>Q: título, descripción, tags
-    Q->>A: Guarda AssetMetadata
-    Q->>A: status = "processed"
-    F->>A: GET /api/assets/{id}/status
-    A-->>F: {status: "processed", metadata: {...}}
-    F->>F: Redirige al detalle del asset
-```
-
-## 🛠️ Stack tecnológico
-
-| Capa                 | Tecnología                       |
-| -------------------- | -------------------------------- |
-| Backend              | Laravel 10 (PHP 8.2)             |
-| Base de datos        | MySQL                            |
-| Autenticación API    | Laravel Sanctum                  |
-| IA                   | Google Gemini API                |
-| Almacenamiento       | Cloudinary                       |
-| Tests                | Pest 2.x + PHPUnit               |
-| CI/CD                | GitHub Actions                   |
-| Frontend             | Vue 3 (repo separado)            |
-| Control de versiones | Git + GitHub                     |
-
-## ⚙️ Instalación local
-
-### Requisitos previos
-
-- PHP 8.1+
-- Composer
-- MySQL
-- Node.js y npm
-
-### Pasos
+No prior technical knowledge required. You need Docker Desktop installed — [download it here](https://www.docker.com/products/docker-desktop/) — and then run:
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/Rubenesky/dam-platform.git
-cd dam-platform
+git clone https://github.com/rubenesky/mnemos-backend
+cd mnemos-backend
+./install.sh
+```
 
-# 2. Instalar dependencias PHP
+The install script sets up the database, generates your application key, and starts all services automatically. Your Mnemos instance will be available at `http://localhost:8000`.
+
+### Manual install
+
+If you prefer to run Mnemos without Docker, you will need PHP 8.2+, Composer, and MySQL installed on your machine.
+
+```bash
 composer install
-
-# 3. Instalar dependencias JS
-npm install
-
-# 4. Copiar el archivo de entorno
 cp .env.example .env
-
-# 5. Generar la clave de la aplicación
 php artisan key:generate
-
-# 6. Configurar la base de datos en .env
-DB_DATABASE=dam_platform
-DB_USERNAME=root
-DB_PASSWORD=
-
-# 7. Añadir la API key de Gemini en .env
-GEMINI_API_KEY=tu_api_key
-
-# 8. Ejecutar migraciones
-php artisan migrate
-
-# 9. Crear enlace simbólico para storage
-php artisan storage:link
-
-# 10. Compilar assets
-npm run dev
-
-# 11. Arrancar el servidor
+php artisan migrate --seed
 php artisan serve
 ```
 
-## 🔐 Roles y permisos
+### Environment variables
 
-| Acción               | Admin | Editor | Viewer |
-| -------------------- | ----- | ------ | ------ |
-| Ver assets           | ✅    | ✅     | ✅     |
-| Subir assets         | ✅    | ✅     | ❌     |
-| Editar assets        | ✅    | ✅     | ❌     |
-| Borrar assets        | ✅    | ❌     | ❌     |
-| Gestionar categorías | ✅    | ❌     | ❌     |
-| Gestionar usuarios   | ✅    | ❌     | ❌     |
-| Acceso a API         | ✅    | ✅     | ✅     |
+Copy `.env.example` to `.env` and fill in the following values:
 
-## 🤖 Integración con IA — Tres sistemas Gemini trabajando juntos
+```env
+# Application
+APP_NAME=Mnemos
+APP_URL=http://localhost:8000          # The URL where Mnemos will be accessible
 
-### 1. Gemini Vision — Análisis visual real de imágenes
+# Database — your MySQL connection details
+DB_DATABASE=mnemos                     # The name of the database to create
+DB_USERNAME=root                       # Your MySQL username
+DB_PASSWORD=                           # Your MySQL password (leave blank if none)
 
-Al subir una imagen, la IA analiza el **contenido visual real**, no el nombre del archivo. Describe objetos, colores, estilos y contexto.
+# Cloudinary — free account at cloudinary.com
+# All uploaded files are stored here
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 
-**Ejemplo real:**
-
-- Archivo: `altas-montanas-colinas-cubiertas-bosques.avif`
-- Título generado: _"Paisaje alpino con picos rocosos, bosque y riachuelo"_
-- Descripción: _"Un vibrante paisaje montañoso con picos rocosos y un cielo azul profundo..."_
-- Tags: `montañas`, `paisaje`, `bosque`, `valle`, `riachuelo`
-
-### 2. Gemini NL2Query — Búsqueda por lenguaje natural
-
-El usuario escribe en lenguaje humano y la IA convierte la búsqueda en filtros estructurados de base de datos.
-
-**Ejemplos:**
-
-- _"muéstrame imágenes de montañas"_ → `{type: image, search: montaña}`
-- _"pdfs subidos esta semana"_ → `{type: application/pdf, date_from: 2026-03-30}`
-- _"imágenes procesadas de paisajes"_ → `{type: image, search: paisaj, status: processed}`
-
-Endpoint: `POST /api/search` con `{"query": "tu búsqueda en lenguaje natural"}`
-
-### 3. Sistema de detección de duplicados — Dos niveles
-
-**Nivel 1 — Hash MD5 (instantáneo):**
-Si alguien sube el mismo archivo exacto, se detecta al 100% por su hash MD5 sin gastar ninguna petición a la IA. El archivo se rechaza automáticamente.
-
-**Nivel 2 — IA semántica (Gemini):**
-Si el archivo es diferente pero el contenido es similar (> 70%), Gemini lo detecta comparando descripciones y tags. El archivo se sube pero se avisa al usuario.
-
-### 4. Gemini AI Variants — Generador de variantes y sugerencias
-
-Desde la vista de cualquier asset el usuario puede pedir a la IA que genere sugerencias de mejora de los metadatos:
-
-- **3 títulos alternativos** más SEO-friendly y descriptivos
-- **2 descripciones mejoradas** más atractivas y detalladas
-- **5 tags adicionales** relevantes no incluidos en los actuales
-
-Las sugerencias son interactivas — el usuario puede aplicar cualquiera con un clic sin necesidad de editar manualmente. Los tags se añaden directamente a los metadatos existentes.
-
-**Ejemplo real:**
-
-- Título actual: _"Valle alpino con río turquesa y montañas nevadas"_
-- Sugerencias: _"Valle Alpino: Río Turquesa y Picos Nevados"_, _"Paisaje Montañoso con Río Glaciar Turquesa"_
-- Tags adicionales sugeridos: `glaciar`, `picos nevados`, `coníferas`, `escénico`, `aire libre`
-
-### 5. RAG — Chat con tu base de datos en lenguaje natural
-
-Tecnología utilizada por Google, Microsoft y OpenAI internamente. El usuario puede hacer preguntas en lenguaje natural sobre los datos reales de la plataforma y la IA responde consultando la base de datos.
-
-**Ejemplos reales:**
-
-- _"¿Cuántos assets tengo subidos?"_ → _"Tienes 10 assets subidos en la plataforma."_
-- _"¿Qué assets subí esta semana?"_ → _"Esta semana subiste: 'Kirkjufell y Kirkjufellsfoss...', 'Paisaje Alpino...'"_
-- _"¿Cuál es el usuario más activo?"_ → _"El usuario más activo es RuBeNesKy con 10 assets subidos."_
-- _"¿Cuánto espacio ocupan los assets?"_ → _"El espacio total ocupado es de 1.35 MB."_
-
-La IA no inventa datos — consulta la base de datos real en tiempo real y responde únicamente con información verificada.
-
-Endpoint: `POST /api/rag` con `{"question": "tu pregunta en lenguaje natural"}`
-
-### Metadatos generados automáticamente
-
-- **Título** descriptivo (máximo 60 caracteres)
-- **Descripción** detallada (máximo 200 caracteres)
-- **Etiquetas** relevantes en español (3-5 tags)
-
-El usuario puede editar los metadatos. Los generados por IA se marcan con ✨ en la interfaz.
-
-Esta tecnología es similar a la que usan plataformas como Freepik internamente para indexar millones de recursos digitales.
-
-## 🌐 API REST
-
-La API usa autenticación por token con Laravel Sanctum.
-
-### Autenticación
-
-```http
-POST /api/login
-Content-Type: application/json
-
-{
-    "email": "usuario@ejemplo.com",
-    "password": "contraseña"
-}
+# Google Gemini — free API key at aistudio.google.com
+# Powers alt-text generation, natural language search, and AI chat
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
-Respuesta:
+**Where to get the keys:**
+- Cloudinary: Create a free account at [cloudinary.com](https://cloudinary.com). Your credentials are on the Dashboard page.
+- Gemini API: Get a free key at [aistudio.google.com](https://aistudio.google.com). No billing required for standard usage.
 
-```json
-{
-    "success": true,
-    "token": "1|abc123...",
-    "user": {
-        "id": 1,
-        "name": "Nombre",
-        "email": "usuario@ejemplo.com",
-        "role": "admin"
-    }
-}
-```
+---
 
-### Endpoints disponibles
+## API Overview
 
-| Método | Endpoint           | Descripción                   |
-| ------ | ------------------ | ----------------------------- |
-| POST   | `/api/login`       | Obtener token de acceso       |
-| POST   | `/api/logout`      | Cerrar sesión                 |
-| GET    | `/api/user`        | Datos del usuario autenticado |
-| GET    | `/api/assets`      | Listar assets (paginado)      |
-| GET    | `/api/assets/{id}` | Ver un asset                  |
-| DELETE | `/api/assets/{id}` | Eliminar un asset             |
+Mnemos exposes a REST API authenticated with Bearer tokens (Laravel Sanctum). All requests require an `Authorization: Bearer <token>` header except where noted.
 
-### Ejemplo de petición autenticada
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/login` | No | Obtain an access token |
+| POST | `/api/logout` | Yes | Invalidate current token |
+| GET | `/api/assets` | Yes | List all assets (paginated) |
+| POST | `/api/assets` | Yes | Upload a new asset |
+| GET | `/api/assets/{id}` | Yes | Retrieve a single asset |
+| PATCH | `/api/assets/{id}` | Yes | Update asset metadata |
+| DELETE | `/api/assets/{id}` | Yes | Delete an asset |
+| GET | `/api/assets/{id}/status` | Yes | Poll AI processing status |
+| POST | `/api/search` | Yes | Natural language search |
+| POST | `/api/rag` | Yes | AI chat over your archive |
+| GET | `/api/public/gallery` | No | Public gallery (no login) |
+| GET | `/api/consents` | Yes | List consent records |
+| POST | `/api/consents` | Yes | Create a consent record |
+| PATCH | `/api/consents/{id}` | Yes | Update consent status |
+| DELETE | `/api/consents/{id}` | Yes | Remove a consent record |
 
-```http
-GET /api/assets
-Authorization: Bearer 1|abc123...
-```
-
-Respuesta:
-
-```json
-{
-    "success": true,
-    "data": [
-        {
-            "id": 1,
-            "original_name": "imagen.jpg",
-            "mime_type": "image/jpeg",
-            "size_kb": 24.88,
-            "status": "processed",
-            "url": "http://localhost:8000/storage/assets/uuid.jpg",
-            "uploaded_by": "Nombre Usuario",
-            "metadata": {
-                "title": "Título generado por IA",
-                "description": "Descripción generada por IA",
-                "tags": ["tag1", "tag2"],
-                "ai_generated": true
-            },
-            "categories": [],
-            "created_at": "2026-03-30T09:58:58.000000Z"
-        }
-    ],
-    "meta": {
-        "total": 1,
-        "per_page": 15,
-        "current_page": 1,
-        "last_page": 1
-    }
-}
-```
-
-## 🧪 Tests
-
-Suite de 27 tests automatizados con CI/CD en GitHub Actions.
+**Login example:**
 
 ```bash
-# Ejecutar todos los tests
-php artisan test tests/Feature/Auth tests/Feature/Authorization tests/Feature/Assets
-
-# Tests de autenticación
-php artisan test tests/Feature/Auth/AuthTest.php
-
-# Tests de permisos por rol
-php artisan test tests/Feature/Authorization/RolePermissionsTest.php
-
-# Tests de assets
-php artisan test tests/Feature/Assets/
+curl -X POST https://your-instance.com/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "admin@example.com", "password": "your-password"}'
 ```
 
-Los tests cubren:
-- Autenticación: login, logout, rate limiting (429 tras 5 intentos), token invalidation
-- Permisos: admin/editor/viewer con sus restricciones reales
-- Upload: validación de tipos, límite de tamaño, detección de duplicados por hash
-- CRUD: paginación, estructura de respuesta, edición de metadatos
+**Natural language search example:**
 
-## 🔒 Seguridad
-
-El proyecto pasó una auditoría de seguridad completa. Vulnerabilidades corregidas:
-
-- Variables de entorno para URL y credenciales (no hardcodeadas en el código)
-- Rate limiting en login (5 intentos/min) y endpoints de IA
-- Tokens Sanctum con expiración de 7 días
-- Whitelist de tipos de archivo — imágenes, PDF, vídeo, audio
-- SVG eliminado (vector de XSS)
-- CORS restringido a métodos y headers necesarios
-
-## 📁 Estructura del proyecto
-
-```
-app/
-├── Http/
-│   ├── Controllers/
-│   │   ├── Api/
-│   │   │   ├── AssetApiController.php
-│   │   │   ├── AuthApiController.php
-│   │   │   ├── RAGController.php
-│   │   │   └── SearchApiController.php
-│   │   ├── Admin/UserController.php
-│   │   └── DashboardController.php
-│   └── Middleware/
-│       └── CheckRole.php
-├── Models/
-│   ├── Asset.php
-│   ├── AssetMetadata.php
-│   ├── Category.php
-│   ├── ActivityLog.php
-│   └── User.php
-├── Services/
-│   ├── GeminiService.php
-│   ├── CloudinaryService.php
-│   ├── RAGService.php
-│   ├── NaturalLanguageSearchService.php
-│   ├── DuplicateDetectionService.php
-│   └── AIVariantsService.php
-└── Traits/
-    └── LogsActivity.php
-tests/
-├── Feature/
-│   ├── Auth/AuthTest.php
-│   ├── Authorization/RolePermissionsTest.php
-│   └── Assets/
-│       ├── AssetUploadTest.php
-│       └── AssetCrudTest.php
+```bash
+curl -X POST https://your-instance.com/api/search \
+  -H "Authorization: Bearer your-token" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "photos from the 2023 summer campaign"}'
 ```
 
-## 👨‍💻 Autor
+---
 
-Desarrollado por **Rubén Jiménez Cebrián** como proyecto de portfolio para el módulo DAW.
+## Roadmap
+
+The following features are planned for future releases. Contributions are welcome.
+
+- [ ] Social media scheduling integration (publish directly to Instagram, LinkedIn)
+- [ ] Bulk import from Google Drive and Dropbox
+- [ ] White-label theming — custom logo, colors, and domain per organization
+- [ ] Self-hosted email notifications for consent requests and uploads
+- [ ] Mobile app (React Native) for field teams
+
+Have a feature request? Open an issue and describe your use case.
+
+---
+
+## Contributing
+
+Mnemos is open source and welcomes contributions from developers, translators, and organizations willing to test and give feedback.
+
+**Reporting issues**
+Use [GitHub Issues](https://github.com/rubenesky/mnemos-backend/issues). Please include: what you expected to happen, what actually happened, and your environment (PHP version, OS, how you installed).
+
+**Submitting a pull request**
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/your-feature-name`
+3. Make your changes
+4. Run the test suite: `./vendor/bin/pest`
+5. Open a PR against `main` with a clear description of what changes and why
+
+**Code standards**
+- PSR-12 formatting (enforced by Laravel Pint: `./vendor/bin/pint`)
+- PHPDoc blocks on all public methods
+- New features must include tests
+- Commit messages follow Conventional Commits (`feat:`, `fix:`, `docs:`, etc.)
+
+**Running the tests:**
+
+```bash
+./vendor/bin/pest
+```
+
+---
+
+## Sustainability
+
+Mnemos is and will remain free and open source under the MIT license. To support ongoing development, the following paid services are available for organizations that want professional assistance:
+
+- **Hosted installation and setup** — we install and configure Mnemos on your server or cloud account
+- **Custom training** — hands-on sessions for your team, in Spanish or English
+- **Dedicated support plans** — priority email support with guaranteed response times
+- **Custom feature development** — specific features built for your organization's workflow
+
+For inquiries: [dcrubben25@gmail.com](mailto:dcrubben25@gmail.com)
+
+---
+
+## License
+
+Mnemos is released under the [MIT License](LICENSE). You are free to use, modify, and distribute it for any purpose, including commercial use. Attribution is appreciated but not required.
