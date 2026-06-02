@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\ActivityLog;
 
 /**
- * Represents a system user with an assigned role (admin, editor, or viewer).
+ * Represents a system user with an assigned role (admin, editor, volunteer, or viewer).
  *
  * @package App\Models
+ *
+ * @property \Illuminate\Support\Carbon|null $expires_at
  */
 class User extends Authenticatable
 {
@@ -29,6 +31,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'expires_at',
     ];
 
     /**
@@ -48,7 +51,8 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'expires_at'        => 'datetime',
+        'password'          => 'hashed',
     ];
 
     /** Returns all assets owned by this user. */
@@ -79,6 +83,14 @@ class User extends Authenticatable
     public function isViewer(): bool
     {
         return $this->role === 'viewer';
+    }
+
+    /** Returns true if the user has the volunteer role and their account has not expired. */
+    public function isVolunteer(): bool
+    {
+        if ($this->role !== 'volunteer') return false;
+        if ($this->expires_at !== null && $this->expires_at->isPast()) return false;
+        return true;
     }
 
     /** Returns true if the user's role matches the given role string. */

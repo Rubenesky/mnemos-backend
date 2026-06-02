@@ -30,10 +30,11 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json([
             'success' => true,
             'data'    => [
-                'id'    => $request->user()->id,
-                'name'  => $request->user()->name,
-                'email' => $request->user()->email,
-                'role'  => $request->user()->role,
+                'id'         => $request->user()->id,
+                'name'       => $request->user()->name,
+                'email'      => $request->user()->email,
+                'role'       => $request->user()->role,
+                'expires_at' => $request->user()->expires_at?->toISOString(),
             ]
         ]);
     });

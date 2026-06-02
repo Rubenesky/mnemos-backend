@@ -27,8 +27,9 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'role' => ['required', 'in:admin,editor,viewer'],
-            'name' => ['required', 'string', 'max:255'],
+            'role'       => ['required', 'in:admin,editor,volunteer,viewer'],
+            'name'       => ['required', 'string', 'max:255'],
+            'expires_at' => ['nullable', 'date', 'after:today'],
         ]);
 
         // Prevent an admin from removing their own admin role
@@ -37,8 +38,9 @@ class UserController extends Controller
         }
 
         $user->update([
-            'name' => $request->name,
-            'role' => $request->role,
+            'name'       => $request->name,
+            'role'       => $request->role,
+            'expires_at' => $request->expires_at,
         ]);
 
         return redirect()->route('admin.users.index')

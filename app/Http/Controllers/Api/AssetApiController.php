@@ -114,8 +114,13 @@ class AssetApiController extends Controller
     // PATCH /api/assets/{id}
     public function update(Request $request, Asset $asset): JsonResponse
     {
-        if (auth()->user()->role === 'viewer') {
+        $user = auth()->user();
+        if ($user->role === 'viewer') {
             return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
+        }
+        // An expired volunteer is treated as a viewer
+        if ($user->role === 'volunteer' && $user->expires_at !== null && $user->expires_at->isPast()) {
+            return response()->json(['success' => false, 'message' => 'Your volunteer access has expired.'], 403);
         }
 
         $validated = $request->validate([
@@ -132,6 +137,13 @@ class AssetApiController extends Controller
 
         if (array_key_exists('is_public', $validated)) {
             if ($validated['is_public'] === true) {
+                if (auth()->user()->role === 'volunteer') {
+                    return response()->json([
+                        'message' => 'Volunteers cannot publish assets.',
+                        'error'   => 'insufficient_role',
+                    ], 403);
+                }
+
                 $blockingConsents = $asset->consents()
                     ->whereIn('status', ['denied', 'pending'])
                     ->count();
@@ -241,6 +253,7 @@ class AssetApiController extends Controller
                 'slug' => $c->slug,
             ]),
             'alt_text'   => $asset->alt_text,
+            'is_public'  => (bool) $asset->is_public,
             'created_at' => $asset->created_at->toISOString(),
         ];
     }

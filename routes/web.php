@@ -25,8 +25,8 @@ Route::middleware('auth')->group(function () {
     // Listar assets — todos los usuarios autenticados pueden ver
     Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
 
-    // Solo admins y editors pueden subir y editar
-    Route::middleware('role:admin,editor')->group(function () {
+    // Solo admins, editors y volunteers pueden subir y editar
+    Route::middleware('role:admin,editor,volunteer')->group(function () {
         Route::get('/assets/create', [AssetController::class, 'create'])->name('assets.create');
         Route::post('/assets', [AssetController::class, 'store'])->name('assets.store');
         Route::get('/assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit');
