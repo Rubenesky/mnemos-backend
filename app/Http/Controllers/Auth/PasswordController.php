@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
+/**
+ * Handles updating the authenticated user's password.
+ *
+ * @package App\Http\Controllers\Auth
+ */
 class PasswordController extends Controller
 {
     /**

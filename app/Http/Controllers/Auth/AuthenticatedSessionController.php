@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
+/**
+ * Handles user login and logout sessions.
+ *
+ * @package App\Http\Controllers\Auth
+ */
 class AuthenticatedSessionController extends Controller
 {
     /**

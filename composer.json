@@ -2,7 +2,7 @@
     "name": "rubenesky/mnemos-backend",
     "type": "project",
     "description": "Mnemos — Open memory for organizations that matter",
-    "keywords": ["mnemos", "dam", "laravel", "digital-asset-management"],
+    "keywords": ["mnemos", "laravel", "digital-asset-management", "ngo", "open-source"],
     "license": "MIT",
     "require": {
         "php": "^8.1",

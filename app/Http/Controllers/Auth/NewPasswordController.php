@@ -12,6 +12,11 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
+/**
+ * Handles resetting user passwords with a valid token.
+ *
+ * @package App\Http\Controllers\Auth
+ */
 class NewPasswordController extends Controller
 {
     /**

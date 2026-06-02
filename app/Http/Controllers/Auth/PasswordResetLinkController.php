@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\View\View;
 
+/**
+ * Handles sending password reset links via email.
+ *
+ * @package App\Http\Controllers\Auth
+ */
 class PasswordResetLinkController extends Controller
 {
     /**

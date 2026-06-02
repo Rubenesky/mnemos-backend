@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
+/**
+ * Handles password confirmation prompts for sensitive actions.
+ *
+ * @package App\Http\Controllers\Auth
+ */
 class ConfirmablePasswordController extends Controller
 {
     /**

@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
+/**
+ * Handles new user registration.
+ *
+ * @package App\Http\Controllers\Auth
+ */
 class RegisteredUserController extends Controller
 {
     /**

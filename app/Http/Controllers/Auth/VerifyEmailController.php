@@ -8,6 +8,11 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 
+/**
+ * Handles email verification from the signed URL.
+ *
+ * @package App\Http\Controllers\Auth
+ */
 class VerifyEmailController extends Controller
 {
     /**

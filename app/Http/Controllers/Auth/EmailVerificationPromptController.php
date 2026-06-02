@@ -8,6 +8,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/**
+ * Displays the email verification prompt page.
+ *
+ * @package App\Http\Controllers\Auth
+ */
 class EmailVerificationPromptController extends Controller
 {
     /**
