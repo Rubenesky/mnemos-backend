@@ -12,7 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * Represents a digital asset (image, video, document, or other file) stored in the system.
  *
- * @property bool $is_public Whether this asset is visible on the public gallery (no auth required).
+ * @property bool        $is_public Whether this asset is visible on the public gallery (no auth required).
+ * @property string|null $alt_text  Auto-generated accessibility description for image assets.
  * @package App\Models
  */
 class Asset extends Model
@@ -31,6 +32,7 @@ class Asset extends Model
         'cloudinary_url',
         'status',
         'is_public',
+        'alt_text',
     ];
 
     public function user(): BelongsTo

@@ -123,7 +123,12 @@ class AssetApiController extends Controller
             'description' => ['nullable', 'string', 'max:5000'],
             'tags'        => ['nullable', 'string', 'max:1000'],
             'is_public'   => ['sometimes', 'boolean'],
+            'alt_text'    => ['nullable', 'string', 'max:500'],
         ]);
+
+        if (array_key_exists('alt_text', $validated)) {
+            $asset->update(['alt_text' => $validated['alt_text']]);
+        }
 
         if (array_key_exists('is_public', $validated)) {
             if ($validated['is_public'] === true) {
@@ -235,6 +240,7 @@ class AssetApiController extends Controller
                 'name' => $c->name,
                 'slug' => $c->slug,
             ]),
+            'alt_text'   => $asset->alt_text,
             'created_at' => $asset->created_at->toISOString(),
         ];
     }

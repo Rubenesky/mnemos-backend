@@ -171,6 +171,55 @@ class GeminiService
         }
     }
 
+    /**
+     * Generates an accessibility alt-text description for an image using Gemini Vision.
+     *
+     * @param string $imageUrl URL of the image to describe
+     * @return string A concise accessibility description (max 125 characters)
+     */
+    public function generateAltText(string $imageUrl): string
+    {
+        try {
+            $imageData = Http::get($imageUrl)->body();
+            $base64    = base64_encode($imageData);
+
+            // Detect mime type from the URL extension; default to jpeg
+            $ext      = strtolower(pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION));
+            $mimeType = match ($ext) {
+                'png'  => 'image/png',
+                'gif'  => 'image/gif',
+                'webp' => 'image/webp',
+                default => 'image/jpeg',
+            };
+
+            $prompt = 'Write a concise alt-text description for this image. '
+                    . 'Focus on what is visually depicted. Maximum 125 characters. '
+                    . 'Return only the description, no quotes, no punctuation at the end.';
+
+            $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
+                'contents' => [[
+                    'parts' => [
+                        ['inline_data' => ['mime_type' => $mimeType, 'data' => $base64]],
+                        ['text' => $prompt],
+                    ]
+                ]]
+            ]);
+
+            if ($response->failed()) {
+                Log::error('Gemini generateAltText error', ['response' => $response->body()]);
+                return '';
+            }
+
+            $text = $response->json('candidates.0.content.parts.0.text');
+
+            return mb_substr(trim((string) $text), 0, 125);
+
+        } catch (\Exception $e) {
+            Log::error('Gemini generateAltText exception', ['error' => $e->getMessage()]);
+            return '';
+        }
+    }
+
     private function defaultMetadata(string $filename): array
     {
         return [

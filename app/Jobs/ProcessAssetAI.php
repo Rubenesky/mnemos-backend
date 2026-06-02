@@ -57,6 +57,14 @@ class ProcessAssetAI implements ShouldQueue
             $metadata['tags'] ?? []
         );
 
+        // Generate alt-text for image assets
+        if (str_starts_with($asset->mime_type, 'image/') && $asset->cloudinary_url) {
+            $altText = $gemini->generateAltText($asset->cloudinary_url);
+            if (!empty($altText)) {
+                $asset->update(['alt_text' => $altText]);
+            }
+        }
+
         $asset->update(['status' => 'processed']);
     }
 
