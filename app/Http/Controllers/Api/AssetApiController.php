@@ -118,11 +118,16 @@ class AssetApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'title'       => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'tags'        => ['nullable', 'string', 'max:1000'],
+            'is_public'   => ['sometimes', 'boolean'],
         ]);
+
+        if (array_key_exists('is_public', $validated)) {
+            $asset->update(['is_public' => $validated['is_public']]);
+        }
 
         $asset->metadata()->updateOrCreate(
             ['asset_id' => $asset->id],

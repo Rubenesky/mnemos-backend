@@ -19,6 +19,7 @@ class Category extends Model
         'slug',
         'description',
         'parent_id',
+        'is_public',
     ];
 
     // A category may belong to a parent category

@@ -2,11 +2,19 @@
 
 use App\Http\Controllers\Api\AssetApiController;
 use App\Http\Controllers\Api\AuthApiController;
+use App\Http\Controllers\Api\PublicGalleryController;
 use App\Http\Controllers\Api\RAGController;
 use App\Http\Controllers\Api\SearchApiController;
 use App\Models\Asset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Public gallery — no authentication required
+Route::prefix('public')->group(function () {
+    Route::get('/collections', [PublicGalleryController::class, 'collections']);
+    Route::get('/collections/{slug}', [PublicGalleryController::class, 'collection']);
+    Route::get('/assets/{id}', [PublicGalleryController::class, 'asset']);
+});
 
 // Rutas públicas de la API
 Route::post('/login', [AuthApiController::class, 'login'])->middleware('throttle:5,1');
