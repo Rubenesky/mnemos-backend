@@ -67,5 +67,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Consent management (GDPR) — export route BEFORE apiResource to avoid 'export' being treated as an ID
     Route::get('consents/export/csv', [ConsentController::class, 'exportCsv']);
     Route::apiResource('consents', ConsentController::class);
-    Route::get('assets/{id}/publication-check', [ConsentController::class, 'publicationCheck']);
+    Route::get('assets/{asset}/publication-check', [ConsentController::class, 'publicationCheck']);
 });

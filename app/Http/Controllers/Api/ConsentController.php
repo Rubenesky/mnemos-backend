@@ -20,6 +20,20 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ConsentController extends Controller
 {
     /**
+     * Restrict all consent operations to admin and editor roles.
+     */
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            $role = auth()->user()?->role;
+            if (!in_array($role, ['admin', 'editor'])) {
+                return response()->json(['message' => 'Unauthorized. Admin or editor role required.'], 403);
+            }
+            return $next($request);
+        });
+    }
+
+    /**
      * List all consent records, optionally filtered by asset_id or status.
      */
     public function index(Request $request): JsonResponse
@@ -52,6 +66,12 @@ class ConsentController extends Controller
             'notes'        => 'nullable|string|max:1000',
             'document'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
+
+        // Only admin can manage any asset; editors can only manage their own assets
+        $asset = Asset::find($validated['asset_id']);
+        if (auth()->user()->role !== 'admin' && $asset->user_id !== auth()->id()) {
+            return response()->json(['message' => 'You do not have permission to add consent for this asset.'], 403);
+        }
 
         $documentPath = null;
         if ($request->hasFile('document')) {
@@ -89,8 +109,8 @@ class ConsentController extends Controller
         ]);
 
         if ($request->hasFile('document')) {
-            if ($consent->document_path) {
-                Storage::disk('local')->delete($consent->document_path);
+            if ($consent->document_path && !Storage::disk('local')->delete($consent->document_path)) {
+                \Log::warning('Failed to delete consent document: ' . $consent->document_path);
             }
             $validated['document_path'] = $request->file('document')->store('consents', 'local');
         }
@@ -105,8 +125,15 @@ class ConsentController extends Controller
      */
     public function destroy(Consent $consent): JsonResponse
     {
-        if ($consent->document_path) {
-            Storage::disk('local')->delete($consent->document_path);
+        $consent->load('asset');
+
+        // Only admin can delete any consent; editors can only delete consents for their own assets
+        if (auth()->user()->role !== 'admin' && $consent->asset->user_id !== auth()->id()) {
+            return response()->json(['message' => 'You do not have permission to delete this consent record.'], 403);
+        }
+
+        if ($consent->document_path && !Storage::disk('local')->delete($consent->document_path)) {
+            \Log::warning('Failed to delete consent document: ' . $consent->document_path);
         }
 
         $consent->delete();
@@ -120,42 +147,38 @@ class ConsentController extends Controller
      */
     public function exportCsv(): StreamedResponse
     {
-        $consents = Consent::with('asset:id,original_name')->get();
-
-        $headers = [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="consents_' . now()->format('Y-m-d') . '.csv"',
-        ];
-
-        return response()->streamDownload(function () use ($consents) {
+        return response()->streamDownload(function () {
             $handle = fopen('php://output', 'w');
-
             fputcsv($handle, ['ID', 'Asset', 'Person', 'Date', 'Type', 'Status', 'Notes', 'Created At']);
 
-            foreach ($consents as $consent) {
-                fputcsv($handle, [
-                    $consent->id,
-                    $consent->asset?->original_name ?? 'N/A',
-                    $consent->person_name,
-                    $consent->consent_date->format('Y-m-d'),
-                    $consent->consent_type,
-                    $consent->status,
-                    $consent->notes ?? '',
-                    $consent->created_at->format('Y-m-d H:i'),
-                ]);
-            }
+            Consent::with('asset:id,original_name')->chunk(500, function ($consents) use ($handle) {
+                foreach ($consents as $consent) {
+                    fputcsv($handle, [
+                        $consent->id,
+                        $consent->asset?->original_name ?? 'N/A',
+                        $consent->person_name,
+                        $consent->consent_date->format('Y-m-d'),
+                        $consent->consent_type,
+                        $consent->status,
+                        $consent->notes ?? '',
+                        $consent->created_at->format('Y-m-d H:i'),
+                    ]);
+                }
+            });
 
             fclose($handle);
-        }, 'consents_' . now()->format('Y-m-d') . '.csv', $headers);
+        }, 'consents_' . now()->format('Y-m-d') . '.csv', [
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="consents_' . now()->format('Y-m-d') . '.csv"',
+        ]);
     }
 
     /**
      * Check whether an asset can be safely published (no denied or pending consents).
      * Returns JSON with canPublish boolean and list of blocking consents.
      */
-    public function publicationCheck(int $assetId): JsonResponse
+    public function publicationCheck(Asset $asset): JsonResponse
     {
-        $asset = Asset::findOrFail($assetId);
         $blockingConsents = $asset->consents()
             ->whereIn('status', ['denied', 'pending'])
             ->get(['id', 'person_name', 'status', 'consent_type']);
