@@ -85,6 +85,7 @@ No prior technical knowledge required. You need Docker Desktop installed — [do
 ```bash
 git clone https://github.com/rubenesky/mnemos-backend
 cd mnemos-backend
+chmod +x install.sh
 ./install.sh
 ```
 

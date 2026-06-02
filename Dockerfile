@@ -1,34 +1,35 @@
-FROM php:8.1-apache
+FROM php:8.2-cli
 
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git curl libpng-dev libonig-dev libxml2-dev zip unzip libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring gd
+    git \
+    curl \
+    libzip-dev \
+    zip \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql zip
+
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs
-
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && a2enmod rewrite
-
+# Set working directory
 WORKDIR /var/www/html
+
+# Copy composer files and install dependencies
+COPY composer.json composer.lock ./
+RUN composer install --no-scripts --no-dev --prefer-dist --optimize-autoloader
+
+# Copy application code
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
-RUN npm install && npm run build
+# Run post-install scripts
+RUN composer dump-autoload --optimize
 
-RUN cp .env.example .env && \
-    php artisan key:generate && \
-    sed -i 's/DB_CONNECTION=mysql/DB_CONNECTION=pgsql/' .env && \
-    sed -i 's/DB_PORT=3306/DB_PORT=5432/' .env
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html/storage \
+    && chmod -R 775 /var/www/html/storage
 
-RUN chown -R www-data:www-data storage bootstrap/cache
-
-CMD php artisan config:clear && \
-    php artisan storage:link && \
-    php artisan migrate --force && \
-    sed -i "s/Listen 80/Listen ${PORT:-10000}/" /etc/apache2/ports.conf && \
-    sed -i "s/:80>/:${PORT:-10000}>/" /etc/apache2/sites-enabled/000-default.conf && \
-    apache2-foreground
+EXPOSE 8000
