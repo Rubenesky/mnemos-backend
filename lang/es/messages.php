@@ -1,0 +1,22 @@
+<?php
+return [
+    'asset_not_found'         => 'Recurso no encontrado.',
+    'asset_deleted'           => 'Recurso eliminado correctamente.',
+    'asset_duplicate'         => 'Este archivo ya existe en el sistema.',
+    'forbidden'               => 'Acceso denegado.',
+    'cannot_delete_asset'     => 'No tienes permiso para eliminar este recurso.',
+    'no_metadata_yet'         => 'Este recurso aún no tiene metadatos generados.',
+    'variants_failed'         => 'No se pudieron generar variantes. Inténtalo de nuevo.',
+    'cannot_publish_consents' => 'No se puede publicar este recurso. Tiene :count consentimiento(s) sin resolver.',
+    'cannot_publish_volunteer'=> 'Los voluntarios no pueden publicar recursos.',
+    'consent_deleted'         => 'Registro de consentimiento eliminado.',
+    'unauthorized'            => 'No autorizado.',
+    'user_updated'            => 'Usuario actualizado correctamente.',
+    'user_deleted'            => 'Usuario eliminado correctamente.',
+    'category_created'        => 'Categoría creada.',
+    'category_updated'        => 'Categoría actualizada.',
+    'category_deleted'        => 'Categoría eliminada.',
+    'asset_created'           => 'Recurso subido correctamente.',
+    'asset_updated'           => 'Recurso actualizado correctamente.',
+    'logged_out'              => 'Sesión cerrada correctamente.',
+];

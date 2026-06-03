@@ -66,7 +66,7 @@ class AssetApiController extends Controller
             $existingAsset->load(['user', 'metadata', 'categories']);
             return response()->json([
                 'success'        => false,
-                'message'        => 'This file already exists in the system.',
+                'message'        => trans('messages.asset_duplicate'),
                 'existing_asset' => $this->formatAsset($existingAsset),
             ], 409);
         }
@@ -116,7 +116,7 @@ class AssetApiController extends Controller
     {
         $user = auth()->user();
         if ($user->role === 'viewer') {
-            return response()->json(['success' => false, 'message' => 'Forbidden.'], 403);
+            return response()->json(['success' => false, 'message' => trans('messages.forbidden')], 403);
         }
         // An expired volunteer is treated as a viewer
         if ($user->role === 'volunteer' && $user->expires_at !== null && $user->expires_at->isPast()) {
@@ -183,7 +183,7 @@ class AssetApiController extends Controller
         if (auth()->user()->role !== 'admin') {
             return response()->json([
                 'success' => false,
-                'message' => 'You do not have permission to delete this asset.',
+                'message' => trans('messages.cannot_delete_asset'),
             ], 403);
         }
 
@@ -193,7 +193,7 @@ class AssetApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Asset deleted successfully.',
+            'message' => trans('messages.asset_deleted'),
         ]);
     }
 
