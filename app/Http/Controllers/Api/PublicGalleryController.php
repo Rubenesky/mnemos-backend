@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Models\Category;
 use App\Services\OrganizationSettingsService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Serves public-facing gallery endpoints — no authentication required.
@@ -32,6 +33,12 @@ class PublicGalleryController extends Controller
             ->withCount(['assets' => fn($q) => $q->where('is_public', true)])
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'description']);
+
+        // TEMP diagnostic — remove after gallery debugging
+        Log::info('[Gallery] public collections count: ' . $collections->count(), [
+            'collections' => $collections->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'assets_count' => $c->assets_count])->toArray(),
+            'total_public_assets' => Asset::where('is_public', true)->where('status', 'processed')->count(),
+        ]);
 
         return response()->json([
             'org_name' => $this->settings->get('org_name', 'Mnemos'),
