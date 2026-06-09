@@ -2,7 +2,7 @@
 
 ### *Open memory for organizations that matter*
 
-[![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen.svg)](#running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-192%20passed-brightgreen.svg)](#running-the-tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![PHP 8.2](https://img.shields.io/badge/PHP-8.2-blue.svg)](https://www.php.net/)
 [![Laravel 10](https://img.shields.io/badge/Laravel-10-red.svg)](https://laravel.com/)
@@ -177,6 +177,8 @@ Mnemos exposes a REST API authenticated with Bearer tokens (Laravel Sanctum). Al
 | GET | `/api/assets/{id}/status` | Yes | Poll AI processing status |
 | POST | `/api/search` | Yes | Natural language search |
 | POST | `/api/rag` | Yes | AI chat over your archive |
+| GET | `/api/health` | No | Health check — returns `{"ok":true}`, no DB query |
+| GET | `/api/public/assets` | No | Public asset list, paginated (no login) |
 | GET | `/api/public/gallery` | No | Public gallery (no login) |
 | GET | `/api/consents` | Yes | List consent records |
 | POST | `/api/consents` | Yes | Create a consent record |
@@ -205,6 +207,44 @@ curl -X POST https://your-instance.com/api/search \
   -H "Content-Type: application/json" \
   -d '{"query": "photos from the 2023 summer campaign"}'
 ```
+
+---
+
+## Keeping the service alive on Render free tier
+
+Render's free tier spins down services after 15 minutes of inactivity. The first request after a spin-down triggers a cold start that takes ~30 seconds, which makes the app appear broken to real users.
+
+The solution is a free external ping service that hits the backend every 5 minutes, preventing the spin-down entirely.
+
+### Option 1 — UptimeRobot (recommended, free)
+
+1. Create a free account at [uptimerobot.com](https://uptimerobot.com)
+2. Click **+ Add New Monitor**
+3. Fill in:
+   - **Monitor Type**: `HTTP(s)`
+   - **Friendly Name**: `Mnemos Backend`
+   - **URL**: `https://mnemos-backend-if2n.onrender.com/api/health`
+   - **Monitoring Interval**: `5 minutes`
+4. Click **Create Monitor**
+
+UptimeRobot will now ping `/api/health` every 5 minutes. The endpoint returns `{"ok": true}` instantly without touching the database, so there is no cost to pinging it frequently. As a bonus, UptimeRobot will send you an email alert if the service goes down.
+
+### Option 2 — cron-job.org (alternative, also free)
+
+1. Create a free account at [cron-job.org](https://cron-job.org)
+2. Create a new cron job:
+   - **URL**: `https://mnemos-backend-if2n.onrender.com/api/health`
+   - **Schedule**: every 14 minutes (`*/14 * * * *`)
+3. Save
+
+### Health endpoint
+
+```
+GET /api/health
+→ 200 {"ok": true}
+```
+
+No authentication required. No database query. Safe to ping at any interval.
 
 ---
 

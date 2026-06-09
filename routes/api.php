@@ -21,6 +21,9 @@ use App\Models\Asset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Health check — no DB query, safe to ping frequently for uptime monitoring
+Route::get('/health', fn () => response()->json(['ok' => true]))->middleware('throttle:60,1');
+
 // Public gallery — no authentication required
 Route::prefix('public')->group(function () {
     Route::get('/assets', [PublicGalleryController::class, 'assets']);      // list — must be before /{id}
