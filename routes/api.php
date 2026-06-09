@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AssetApiController;
+use App\Http\Controllers\Api\CollectionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AssetAuditController;
 use App\Http\Controllers\Api\EmbedController;
@@ -112,6 +113,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reports/impact', [ReportController::class, 'impact'])->middleware('throttle:3,1');
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
+    // Collections (categories) — admin and editor only
+    Route::get('/collections', [CollectionController::class, 'index']);
+    Route::post('/collections', [CollectionController::class, 'store']);
+    Route::get('/collections/{id}', [CollectionController::class, 'show']);
+    Route::patch('/collections/{id}', [CollectionController::class, 'update']);
+    Route::delete('/collections/{id}', [CollectionController::class, 'destroy']);
+    Route::patch('/collections/{id}/visibility', [CollectionController::class, 'toggleVisibility']);
+    Route::post('/collections/{id}/assets', [CollectionController::class, 'addAsset']);
+    Route::delete('/collections/{id}/assets/{assetId}', [CollectionController::class, 'removeAsset']);
 
     // Admin panel — admin role only
     Route::prefix('admin')->middleware('admin')->group(function () {
