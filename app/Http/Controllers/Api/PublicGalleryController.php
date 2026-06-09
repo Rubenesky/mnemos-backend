@@ -7,7 +7,7 @@ use App\Models\Asset;
 use App\Models\Category;
 use App\Services\OrganizationSettingsService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 
 /**
  * Serves public-facing gallery endpoints — no authentication required.
@@ -17,28 +17,69 @@ use Illuminate\Support\Facades\Log;
 class PublicGalleryController extends Controller
 {
     /**
-     * @param OrganizationSettingsService $settings  Used to expose org name in collection listings
+     * @param OrganizationSettingsService $settings  Used to expose org name in all public responses
      */
     public function __construct(
         private readonly OrganizationSettingsService $settings,
     ) {}
 
     /**
-     * List all public collections (categories with is_public = true).
-     * Returns: id, name, slug, description, public asset count.
+     * GET /api/public/assets
+     *
+     * Returns all public processed assets, paginated. Does not require a collection.
+     * Accepts an optional ?collection={slug} query parameter to filter by a public category.
+     *
+     * @param  Request  $request
+     * @return JsonResponse  200 {
+     *   org_name: string,
+     *   data: Asset[],
+     *   current_page: int,
+     *   last_page: int,
+     *   total: int
+     * }
+     */
+    public function assets(Request $request): JsonResponse
+    {
+        $query = Asset::where('is_public', true)
+            ->where('status', 'processed')
+            ->with('metadata', 'categories')
+            ->latest();
+
+        if ($request->filled('collection')) {
+            $category = Category::where('slug', $request->input('collection'))
+                ->where('is_public', true)
+                ->first();
+
+            if ($category) {
+                $query->whereHas('categories', fn ($q) => $q->where('categories.id', $category->id));
+            }
+        }
+
+        $paginated = $query->paginate(12);
+
+        return response()->json([
+            'org_name'     => $this->settings->get('org_name', 'Mnemos'),
+            'data'         => $paginated->map(fn ($a) => $this->formatAsset($a))->values(),
+            'current_page' => $paginated->currentPage(),
+            'last_page'    => $paginated->lastPage(),
+            'total'        => $paginated->total(),
+        ]);
+    }
+
+    /**
+     * GET /api/public/collections
+     *
+     * Lists all public categories with their public asset counts.
+     * Used as optional filter tabs in the gallery.
+     *
+     * @return JsonResponse  200 { org_name: string, data: Category[] }
      */
     public function collections(): JsonResponse
     {
         $collections = Category::where('is_public', true)
-            ->withCount(['assets' => fn($q) => $q->where('is_public', true)])
+            ->withCount(['assets' => fn ($q) => $q->where('is_public', true)->where('status', 'processed')])
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'description']);
-
-        // TEMP diagnostic — remove after gallery debugging
-        Log::info('[Gallery] public collections count: ' . $collections->count(), [
-            'collections' => $collections->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'assets_count' => $c->assets_count])->toArray(),
-            'total_public_assets' => Asset::where('is_public', true)->where('status', 'processed')->count(),
-        ]);
 
         return response()->json([
             'org_name' => $this->settings->get('org_name', 'Mnemos'),
@@ -47,8 +88,13 @@ class PublicGalleryController extends Controller
     }
 
     /**
-     * List public assets within a specific collection (by slug).
-     * Returns paginated assets (20 per page) with metadata.
+     * GET /api/public/collections/{slug}
+     *
+     * Lists public assets within a specific collection (by slug).
+     * Kept for backwards-compatible shareable URLs.
+     *
+     * @param  string  $slug
+     * @return JsonResponse  200 { collection: {...}, assets: { data, current_page, last_page, total } }
      */
     public function collection(string $slug): JsonResponse
     {
@@ -70,7 +116,7 @@ class PublicGalleryController extends Controller
                 'description' => $category->description,
             ],
             'assets' => [
-                'data'         => $assets->map(fn($a) => $this->formatAsset($a))->values(),
+                'data'         => $assets->map(fn ($a) => $this->formatAsset($a))->values(),
                 'current_page' => $assets->currentPage(),
                 'last_page'    => $assets->lastPage(),
                 'total'        => $assets->total(),
@@ -79,7 +125,12 @@ class PublicGalleryController extends Controller
     }
 
     /**
-     * Show a single public asset by ID.
+     * GET /api/public/assets/{id}
+     *
+     * Returns a single public processed asset by ID.
+     *
+     * @param  int  $id
+     * @return JsonResponse  200 { data: Asset } | 404
      */
     public function asset(int $id): JsonResponse
     {
@@ -93,8 +144,11 @@ class PublicGalleryController extends Controller
     }
 
     /**
-     * Format an asset for public API response.
+     * Format an asset for all public API responses.
      * Excludes internal fields (path, file_hash, user_id).
+     *
+     * @param  Asset  $asset
+     * @return array{id: int, original_name: string, mime_type: string, cloudinary_url: string|null, created_at: string|null, metadata: array|null, categories: array}
      */
     private function formatAsset(Asset $asset): array
     {
@@ -110,7 +164,7 @@ class PublicGalleryController extends Controller
                 'tags'         => $asset->metadata->tags ?? [],
                 'ai_generated' => $asset->metadata->ai_generated,
             ] : null,
-            'categories'     => $asset->categories->map(fn($c) => [
+            'categories'     => $asset->categories->map(fn ($c) => [
                 'id'   => $c->id,
                 'name' => $c->name,
                 'slug' => $c->slug,

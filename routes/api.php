@@ -23,9 +23,10 @@ use Illuminate\Support\Facades\Route;
 
 // Public gallery — no authentication required
 Route::prefix('public')->group(function () {
+    Route::get('/assets', [PublicGalleryController::class, 'assets']);      // list — must be before /{id}
+    Route::get('/assets/{id}', [PublicGalleryController::class, 'asset']);
     Route::get('/collections', [PublicGalleryController::class, 'collections']);
     Route::get('/collections/{slug}', [PublicGalleryController::class, 'collection']);
-    Route::get('/assets/{id}', [PublicGalleryController::class, 'asset']);
 
     // Token-based consent form — no login required
     Route::get('/consents/{token}', [PublicConsentController::class, 'show']);
