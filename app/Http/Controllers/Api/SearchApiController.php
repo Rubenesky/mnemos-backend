@@ -7,6 +7,7 @@ use App\Models\Asset;
 use App\Services\NaturalLanguageSearchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * REST API controller for natural-language asset search powered by the Gemini AI service.
@@ -24,7 +25,7 @@ class SearchApiController extends Controller
         $userQuery = $request->input('query');
 
         // Parse the natural-language query into structured filters
-        $nlSearch = new NaturalLanguageSearchService();
+        $nlSearch = app(NaturalLanguageSearchService::class);
         $filters  = $nlSearch->parseQuery($userQuery);
 
         // If Gemini failed and returned no filters, report it
@@ -38,20 +39,30 @@ class SearchApiController extends Controller
         // Build the query using the parsed filters
         $query = Asset::with(['user', 'metadata', 'categories']);
 
+        // PostgreSQL LIKE is case-sensitive; ILIKE is the case-insensitive equivalent.
+        $likeOp = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+        // IDOR protection: non-admin users can only see their own assets
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
+
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('original_name', 'like', "%{$search}%")
-                  ->orWhereHas('metadata', function ($q) use ($search) {
-                      $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%")
-                        ->orWhere('tags', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search, $likeOp) {
+                $q->where('original_name', $likeOp, "%{$search}%")
+                  ->orWhereHas('metadata', function ($q) use ($search, $likeOp) {
+                      $q->where('title', $likeOp, "%{$search}%")
+                        ->orWhere('description', $likeOp, "%{$search}%")
+                        ->orWhere('tags', $likeOp, "%{$search}%");
                   });
             });
         }
 
         if (!empty($filters['type'])) {
-            $query->where('mime_type', 'like', $filters['type'] . '%');
+            $query->where('mime_type', $likeOp, $filters['type'] . '%');
         }
 
         if (!empty($filters['status'])) {
@@ -66,30 +77,38 @@ class SearchApiController extends Controller
             $query->whereDate('created_at', '<=', $filters['date_to']);
         }
 
-        $assets = $query->latest()->get();
+        $assets = $query->latest()->paginate(20);
 
         return response()->json([
             'success' => true,
             'query'   => $userQuery,
             'filters' => $filters,
-            'total'   => $assets->count(),
-            'data'    => $assets->map(function ($asset) {
+            'data'    => $assets->getCollection()->map(function ($asset) {
                 return [
                     'id'            => $asset->id,
                     'original_name' => $asset->original_name,
                     'mime_type'     => $asset->mime_type,
                     'size_kb'       => round($asset->size / 1024, 2),
                     'status'        => $asset->status,
-                    'url' => $asset->path,
+                    'url'           => $asset->cloudinary_url
+                                        ?: (str_starts_with($asset->path, 'http')
+                                            ? $asset->path
+                                            : asset('storage/' . $asset->path)),
                     'uploaded_by'   => $asset->user->name,
                     'metadata'      => $asset->metadata ? [
                         'title'       => $asset->metadata->title,
                         'description' => $asset->metadata->description,
                         'tags'        => $asset->metadata->tags,
                     ] : null,
-                    'created_at' => $asset->created_at->toISOString(),
+                    'created_at'    => $asset->created_at->toISOString(),
                 ];
             }),
+            'meta' => [
+                'total'        => $assets->total(),
+                'per_page'     => $assets->perPage(),
+                'current_page' => $assets->currentPage(),
+                'last_page'    => $assets->lastPage(),
+            ],
         ]);
     }
 }

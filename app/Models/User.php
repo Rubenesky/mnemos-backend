@@ -15,7 +15,14 @@ use App\Models\ActivityLog;
  *
  * @package App\Models
  *
+ * @property int                             $id
+ * @property string                          $name
+ * @property string                          $email
+ * @property string                          $role
+ * @property bool                            $is_active
+ * @property \Illuminate\Support\Carbon|null $last_login_at
  * @property \Illuminate\Support\Carbon|null $expires_at
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
  */
 class User extends Authenticatable
 {
@@ -31,7 +38,18 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'expires_at',
+        'is_active',
+        'last_login_at',
+    ];
+
+    /**
+     * Default attribute values applied on model instantiation.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'role'      => 'viewer',
+        'is_active' => true,
     ];
 
     /**
@@ -52,6 +70,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'expires_at'        => 'datetime',
+        'last_login_at'     => 'datetime',
+        'is_active'         => 'boolean',
         'password'          => 'hashed',
     ];
 
@@ -97,5 +117,15 @@ class User extends Authenticatable
     public function hasRole(string $role): bool
     {
         return $this->role === $role;
+    }
+
+    /**
+     * Returns true if the user account is active (not deactivated by an administrator).
+     *
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return (bool) $this->is_active;
     }
 }

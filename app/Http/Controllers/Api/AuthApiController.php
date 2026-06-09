@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -31,8 +32,45 @@ class AuthApiController extends Controller
             ]);
         }
 
+        if (!$user->is_active) {
+            throw ValidationException::withMessages([
+                'email' => ['Your account has been deactivated.'],
+            ]);
+        }
+
         // Revoke previous tokens and create a new one
         $user->tokens()->delete();
+        $token = $user->createToken('api-token', ['*'], now()->addDays(7))->plainTextToken;
+
+        $user->update(['last_login_at' => now()]);
+
+        return response()->json([
+            'success' => true,
+            'token'   => $token,
+            'user'    => [
+                'id'         => $user->id,
+                'name'       => $user->name,
+                'email'      => $user->email,
+                'role'       => $user->role,
+                'expires_at' => $user->expires_at?->toISOString(),
+            ]
+        ]);
+    }
+
+    public function register(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name'                  => ['required', 'string', 'max:255'],
+            'email'                 => ['required', 'email', 'max:255', 'unique:users'],
+            'password'              => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+        ]);
+
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
         $token = $user->createToken('api-token', ['*'], now()->addDays(7))->plainTextToken;
 
         return response()->json([
@@ -43,8 +81,8 @@ class AuthApiController extends Controller
                 'name'  => $user->name,
                 'email' => $user->email,
                 'role'  => $user->role,
-            ]
-        ]);
+            ],
+        ], 201);
     }
 
     public function logout(Request $request): JsonResponse
@@ -57,25 +95,4 @@ class AuthApiController extends Controller
         ]);
     }
 
-    public function makeAdmin(): JsonResponse
-    {
-        $adminEmail = config('app.admin_email');
-
-        if (!$adminEmail) {
-            return response()->json(['message' => 'Not configured'], 404);
-        }
-
-        $user = \App\Models\User::where('email', $adminEmail)->first();
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        $user->update(['role' => 'admin']);
-
-        return response()->json([
-            'success' => true,
-            'message' => "User {$user->email} is now admin",
-        ]);
-    }
 }

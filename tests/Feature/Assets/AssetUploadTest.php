@@ -28,6 +28,7 @@ beforeEach(function () {
             'description' => 'Descripción generada',
             'tags'        => ['prueba'],
         ]);
+        $mock->shouldReceive('generateAltText')->andReturn('');
     });
 
     $this->mock(DuplicateDetectionService::class, function ($mock) {

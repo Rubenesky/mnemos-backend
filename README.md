@@ -2,9 +2,11 @@
 
 ### *Open memory for organizations that matter*
 
+[![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen.svg)](#running-the-tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![PHP 8.2](https://img.shields.io/badge/PHP-8.2-blue.svg)](https://www.php.net/)
 [![Laravel 10](https://img.shields.io/badge/Laravel-10-red.svg)](https://laravel.com/)
+[![Vue 3](https://img.shields.io/badge/Frontend-Vue%203-42b883.svg?logo=vue.js)](https://github.com/rubenesky/mnemos-frontend)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen.svg)](https://github.com/rubenesky/mnemos-backend)
 
 ---
@@ -59,6 +61,31 @@ A temporary access level between Viewer and Editor, with a configurable expiry d
 
 **6. Multilingual**
 Full Spanish and English support throughout the interface, powered by Laravel's i18n system. More languages can be added by the community.
+
+**7. 🔗 Token-Based Consent Requests**
+Generate a shareable link for any pending consent record and send it directly to the person whose consent is required. The recipient opens the link — no account needed — reviews the details, and accepts or denies in one click. The decision is recorded instantly and admins are notified automatically.
+
+**8. 🔔 Internal Notification System**
+Real-time bell icon in the topbar keeps admins informed without email. Notifications fire automatically when a volunteer uploads an asset or when someone responds to a consent request. Unread count badge, per-item mark-as-read, and "mark all read" — all persisted in the database.
+
+**9. 🧭 Guided Onboarding**
+A 3-step modal greets every new user on their first login, explaining what Mnemos does and how to get started. Shown once and never again (tracked in localStorage). No separate redirect or page — it appears directly over the dashboard.
+
+---
+
+## 📸 Screenshots
+
+| Dashboard | Asset Gallery | GDPR Consent Panel |
+|---|---|---|
+| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Assets](docs/screenshots/02-assets.png) | ![Consents](docs/screenshots/04-consent-panel.png) |
+
+| Asset Upload | AI Chat | Public Gallery |
+|---|---|---|
+| ![Upload](docs/screenshots/03-upload.png) | ![RAG](docs/screenshots/05-ai-chat.png) | ![Gallery](docs/screenshots/06-public-gallery.png) |
+
+| Onboarding Modal | Notification Bell | Consent Request Form |
+|---|---|---|
+| ![Onboarding](docs/screenshots/07-onboarding.png) | ![Notifications](docs/screenshots/08-notifications.png) | ![Consent Form](docs/screenshots/09-consent-form.png) |
 
 ---
 
@@ -155,6 +182,12 @@ Mnemos exposes a REST API authenticated with Bearer tokens (Laravel Sanctum). Al
 | POST | `/api/consents` | Yes | Create a consent record |
 | PATCH | `/api/consents/{id}` | Yes | Update consent status |
 | DELETE | `/api/consents/{id}` | Yes | Remove a consent record |
+| POST | `/api/consents/{id}/send-request` | Yes | Generate a shareable consent request link |
+| GET | `/api/public/consents/{token}` | No | View consent form by token |
+| POST | `/api/public/consents/{token}` | No | Submit consent decision by token |
+| GET | `/api/notifications` | Yes | List notifications for current user |
+| POST | `/api/notifications/{id}/read` | Yes | Mark a notification as read |
+| POST | `/api/notifications/read-all` | Yes | Mark all notifications as read |
 
 **Login example:**
 
@@ -214,6 +247,8 @@ Use [GitHub Issues](https://github.com/rubenesky/mnemos-backend/issues). Please 
 ```bash
 ./vendor/bin/pest
 ```
+
+The test suite currently covers **90 tests / 204+ assertions** across authorization, security, IDOR, asset CRUD, consent tokens, notifications, and AI processing.
 
 ---
 

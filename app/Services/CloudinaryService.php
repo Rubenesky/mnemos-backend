@@ -58,4 +58,19 @@ class CloudinaryService
     {
         $this->cloudinary->uploadApi()->destroy($publicId);
     }
+
+    /**
+     * Performs a lightweight Admin API ping to verify Cloudinary connectivity.
+     *
+     * @return bool True if the service responds with status "ok".
+     */
+    public function ping(): bool
+    {
+        try {
+            $result = $this->cloudinary->adminApi()->ping();
+            return ($result['status'] ?? '') === 'ok';
+        } catch (\Exception) {
+            return false;
+        }
+    }
 }

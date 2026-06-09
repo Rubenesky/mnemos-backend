@@ -33,6 +33,16 @@ class Asset extends Model
         'status',
         'is_public',
         'alt_text',
+        'is_press_kit',
+        'press_kit_description',
+        'is_emergency_kit',
+        'extracted_text',
+    ];
+
+    protected $casts = [
+        'is_public'       => 'boolean',
+        'is_press_kit'    => 'boolean',
+        'is_emergency_kit' => 'boolean',
     ];
 
     public function user(): BelongsTo

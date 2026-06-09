@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use App\Models\Category;
+use App\Services\OrganizationSettingsService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Serves public-facing gallery endpoints — no authentication required.
@@ -15,6 +15,13 @@ use Illuminate\Http\Request;
  */
 class PublicGalleryController extends Controller
 {
+    /**
+     * @param OrganizationSettingsService $settings  Used to expose org name in collection listings
+     */
+    public function __construct(
+        private readonly OrganizationSettingsService $settings,
+    ) {}
+
     /**
      * List all public collections (categories with is_public = true).
      * Returns: id, name, slug, description, public asset count.
@@ -26,7 +33,10 @@ class PublicGalleryController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'slug', 'description']);
 
-        return response()->json(['data' => $collections]);
+        return response()->json([
+            'org_name' => $this->settings->get('org_name', 'Mnemos'),
+            'data'     => $collections,
+        ]);
     }
 
     /**
@@ -42,7 +52,7 @@ class PublicGalleryController extends Controller
         $assets = $category->assets()
             ->where('is_public', true)
             ->where('status', 'processed')
-            ->with('metadata')
+            ->with('metadata', 'categories')
             ->paginate(20);
 
         return response()->json([
@@ -52,7 +62,12 @@ class PublicGalleryController extends Controller
                 'slug'        => $category->slug,
                 'description' => $category->description,
             ],
-            'assets' => $assets,
+            'assets' => [
+                'data'         => $assets->map(fn($a) => $this->formatAsset($a))->values(),
+                'current_page' => $assets->currentPage(),
+                'last_page'    => $assets->lastPage(),
+                'total'        => $assets->total(),
+            ],
         ]);
     }
 
@@ -81,9 +96,13 @@ class PublicGalleryController extends Controller
             'original_name'  => $asset->original_name,
             'mime_type'      => $asset->mime_type,
             'cloudinary_url' => $asset->cloudinary_url,
-            'title'          => $asset->metadata?->title,
-            'description'    => $asset->metadata?->description,
-            'tags'           => $asset->metadata?->tags ?? [],
+            'created_at'     => $asset->created_at?->toISOString(),
+            'metadata'       => $asset->metadata ? [
+                'title'        => $asset->metadata->title,
+                'description'  => $asset->metadata->description,
+                'tags'         => $asset->metadata->tags ?? [],
+                'ai_generated' => $asset->metadata->ai_generated,
+            ] : null,
             'categories'     => $asset->categories->map(fn($c) => [
                 'id'   => $c->id,
                 'name' => $c->name,

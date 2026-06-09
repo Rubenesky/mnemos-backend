@@ -52,6 +52,19 @@ class AssetTest extends TestCase
     {
         Storage::fake('public');
 
+        $this->mock(\App\Services\CloudinaryService::class, function ($mock) {
+            $mock->shouldReceive('upload')->andReturn([
+                'public_id' => 'test/fake-id',
+                'url'       => 'https://res.cloudinary.com/test/image/upload/fake.jpg',
+            ]);
+        });
+        $this->mock(\App\Services\GeminiService::class, function ($mock) {
+            $mock->shouldReceive('generateAssetMetadata')->andReturn([
+                'title' => 'Test', 'description' => 'Test', 'tags' => [],
+            ]);
+            $mock->shouldReceive('generateAltText')->andReturn('');
+        });
+
         $user = User::factory()->create(['role' => 'admin']);
         $file = UploadedFile::fake()->create('test-image.jpg', 100, 'image/jpeg');
 

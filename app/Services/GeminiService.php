@@ -22,7 +22,7 @@ class GeminiService
         $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     }
 
-    public function generateAssetMetadata(string $filename, string $mimeType, ?string $storagePath = null, ?string $cloudinaryUrl = null): array
+    public function generateAssetMetadata(string $filename, string $mimeType, ?string $storagePath = null, ?string $cloudinaryUrl = null, ?string $extractedText = null): array
     {
         // For images, use Vision with the Cloudinary URL or local storage
         if (str_starts_with($mimeType, 'image/')) {
@@ -33,7 +33,63 @@ class GeminiService
                 return $this->analyzeImageWithVision($filename, $mimeType, $storagePath);
             }
         }
+
+        // For documents with extracted text, use content-aware analysis
+        if (!empty($extractedText) && mb_strlen($extractedText) > 50) {
+            return $this->analyzeDocumentContent($filename, $mimeType, $extractedText);
+        }
+
         return $this->analyzeByFilename($filename, $mimeType);
+    }
+
+    /**
+     * Generates AI metadata for a document by analysing its extracted text content.
+     *
+     * @param string $filename     Original filename (already sanitised)
+     * @param string $mimeType     MIME type of the document
+     * @param string $extractedText Plain-text content extracted from the document (up to 4000 chars)
+     * @return array{title: string, description: string, tags: list<string>}
+     */
+    private function analyzeDocumentContent(string $filename, string $mimeType, string $extractedText): array
+    {
+        $filename = $this->sanitizeFilename($filename);
+        $snippet  = mb_substr($extractedText, 0, 3000);
+
+        $prompt = "Analiza el siguiente documento con nombre '{$filename}' (tipo: {$mimeType}).
+Contenido del documento:
+---
+{$snippet}
+---
+Genera metadatos en formato JSON con exactamente estas claves:
+- title: título descriptivo del documento en español (máximo 60 caracteres)
+- description: resumen del contenido en español (máximo 200 caracteres)
+- tags: array de 5 etiquetas relevantes en español basadas en el contenido
+Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
+
+        try {
+            $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
+                'contents' => [['parts' => [['text' => $prompt]]]]
+            ]);
+
+            if ($response->failed()) {
+                Log::error('Gemini document analysis error', ['status' => $response->status()]);
+                return $this->analyzeByFilename($filename, $mimeType);
+            }
+
+            $text  = $response->json('candidates.0.content.parts.0.text');
+            $clean = preg_replace('/```json|```/', '', $text);
+            $data  = json_decode(trim($clean), true);
+
+            if (!$data || !isset($data['title'])) {
+                return $this->analyzeByFilename($filename, $mimeType);
+            }
+
+            return $data;
+
+        } catch (\Exception $e) {
+            Log::error('Gemini document analysis exception', ['error' => $e->getMessage()]);
+            return $this->analyzeByFilename($filename, $mimeType);
+        }
     }
 
     private function analyzeImageFromUrl(string $filename, string $mimeType, string $imageUrl): array
@@ -42,13 +98,13 @@ class GeminiService
             $imageData = Http::get($imageUrl)->body();
             $base64    = base64_encode($imageData);
 
-            $prompt = "Analyse this image and generate metadata in JSON format with exactly these keys:
-        - title: short descriptive title (maximum 60 characters)
-        - description: detailed description of what you see in the image (maximum 200 characters)
-        - tags: array of 5 relevant tags based on the visual content
-        Respond ONLY with the JSON, no explanations or markdown formatting.";
+            $prompt = "Analiza esta imagen y genera metadatos en formato JSON con exactamente estas claves:
+        - title: título descriptivo corto en español (máximo 60 caracteres)
+        - description: descripción detallada en español de lo que ves en la imagen (máximo 200 caracteres)
+        - tags: array de 5 etiquetas relevantes en español basadas en el contenido visual
+        Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
-            $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
+            $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
                 'contents' => [[
                     'parts' => [
                         ['inline_data' => ['mime_type' => $mimeType, 'data' => $base64]],
@@ -58,7 +114,7 @@ class GeminiService
             ]);
 
             if ($response->failed()) {
-                Log::error('Gemini Vision URL error', ['response' => $response->body()]);
+                Log::error('Gemini Vision URL error', ['status' => $response->status()]);
                 return $this->analyzeByFilename($filename, $mimeType);
             }
 
@@ -85,13 +141,13 @@ class GeminiService
             $imageData = Storage::disk('public')->get($storagePath);
             $base64    = base64_encode($imageData);
 
-            $prompt = "Analyse this image and generate metadata in JSON format with exactly these keys:
-            - title: short descriptive title (maximum 60 characters)
-            - description: detailed description of what you see in the image (maximum 200 characters)
-            - tags: array of 5 relevant tags based on the visual content
-            Respond ONLY with the JSON, no explanations or markdown formatting.";
+            $prompt = "Analiza esta imagen y genera metadatos en formato JSON con exactamente estas claves:
+            - title: título descriptivo corto en español (máximo 60 caracteres)
+            - description: descripción detallada en español de lo que ves en la imagen (máximo 200 caracteres)
+            - tags: array de 5 etiquetas relevantes en español basadas en el contenido visual
+            Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
-            $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
+            $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
                 'contents' => [
                     [
                         'parts' => [
@@ -108,12 +164,11 @@ class GeminiService
             ]);
 
             if ($response->failed()) {
-                Log::error('Gemini Vision error', ['response' => $response->body()]);
+                Log::error('Gemini Vision error', ['status' => $response->status()]);
                 return $this->analyzeByFilename($filename, $mimeType);
             }
 
             $text = $response->json('candidates.0.content.parts.0.text');
-            Log::info('Gemini Vision response', ['text' => $text]);
 
             $clean = preg_replace('/```json|```/', '', $text);
             $data  = json_decode(trim($clean), true);
@@ -130,17 +185,25 @@ class GeminiService
         }
     }
 
+    private function sanitizeFilename(string $filename): string
+    {
+        // Strip everything except safe printable characters before injecting into prompts
+        $safe = preg_replace('/[^\w\s.\-]/u', '', $filename);
+        return mb_substr(trim($safe), 0, 120);
+    }
+
     private function analyzeByFilename(string $filename, string $mimeType): array
     {
-        $prompt = "Analyse this file with name '{$filename}' and type '{$mimeType}'.
-        Generate metadata in JSON format with exactly these keys:
-        - title: short descriptive title (maximum 60 characters)
-        - description: useful description (maximum 200 characters)
-        - tags: array of 3 to 5 relevant tags
-        Respond ONLY with the JSON, no explanations or markdown formatting.";
+        $filename = $this->sanitizeFilename($filename);
+        $prompt = "Analiza este archivo con nombre '{$filename}' y tipo '{$mimeType}'.
+        Genera metadatos en formato JSON con exactamente estas claves:
+        - title: título descriptivo corto en español (máximo 60 caracteres)
+        - description: descripción útil en español (máximo 200 caracteres)
+        - tags: array de 3 a 5 etiquetas relevantes en español
+        Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
         try {
-            $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
+            $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
                 'contents' => [
                     [
                         'parts' => [
@@ -151,7 +214,7 @@ class GeminiService
             ]);
 
             if ($response->failed()) {
-                Log::error('Gemini API error', ['response' => $response->body()]);
+                Log::error('Gemini API error', ['status' => $response->status()]);
                 return $this->defaultMetadata($filename);
             }
 
@@ -192,11 +255,11 @@ class GeminiService
                 default => 'image/jpeg',
             };
 
-            $prompt = 'Write a concise alt-text description for this image. '
-                    . 'Focus on what is visually depicted. Maximum 125 characters. '
-                    . 'Return only the description, no quotes, no punctuation at the end.';
+            $prompt = 'Escribe una descripción de texto alternativo concisa para esta imagen en español. '
+                    . 'Céntrate en lo que se muestra visualmente. Máximo 125 caracteres. '
+                    . 'Devuelve solo la descripción, sin comillas, sin puntuación al final.';
 
-            $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
+            $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
                 'contents' => [[
                     'parts' => [
                         ['inline_data' => ['mime_type' => $mimeType, 'data' => $base64]],
@@ -206,7 +269,7 @@ class GeminiService
             ]);
 
             if ($response->failed()) {
-                Log::error('Gemini generateAltText error', ['response' => $response->body()]);
+                Log::error('Gemini generateAltText error', ['status' => $response->status()]);
                 return '';
             }
 
@@ -217,6 +280,24 @@ class GeminiService
         } catch (\Exception $e) {
             Log::error('Gemini generateAltText exception', ['error' => $e->getMessage()]);
             return '';
+        }
+    }
+
+    /**
+     * Performs a lightweight models-list call to verify Gemini API connectivity.
+     *
+     * @return bool True if the API responds with HTTP 2xx.
+     */
+    public function ping(): bool
+    {
+        try {
+            $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])
+                ->timeout(5)
+                ->get('https://generativelanguage.googleapis.com/v1beta/models');
+
+            return $response->successful();
+        } catch (\Exception) {
+            return false;
         }
     }
 

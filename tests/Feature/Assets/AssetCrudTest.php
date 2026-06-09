@@ -41,7 +41,7 @@ it('detalle de asset tiene estructura completa', function () {
 
 it('editar metadatos actualiza título y tags', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create();
+    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
 
     $this->actingAs($editor, 'sanctum')
          ->patchJson("/api/assets/{$asset->id}", [

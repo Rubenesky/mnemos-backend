@@ -42,9 +42,9 @@ it('viewer no puede editar metadatos', function () {
          ->assertStatus(403);
 });
 
-it('editor puede editar metadatos', function () {
+it('editor puede editar metadatos de su propio asset', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create();
+    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
 
     $this->actingAs($editor, 'sanctum')
          ->patchJson("/api/assets/{$asset->id}", [

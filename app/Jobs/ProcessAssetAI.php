@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\AssetMetadata;
 use App\Services\DuplicateDetectionService;
 use App\Services\GeminiService;
+use App\Services\TextExtractionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -19,7 +20,7 @@ class ProcessAssetAI implements ShouldQueue
 
     public int $tries   = 3;
     public int $backoff = 30;
-    public int $timeout = 60;
+    public int $timeout = 120;
 
     public function __construct(public readonly int $assetId)
     {
@@ -34,21 +35,38 @@ class ProcessAssetAI implements ShouldQueue
             return;
         }
 
-        $gemini   = app(GeminiService::class);
+        if ($asset->status === 'processed') {
+            return;
+        }
+
+        $gemini        = app(GeminiService::class);
+        $extractor     = app(TextExtractionService::class);
+        $extractedText = null;
+
+        if ($extractor->isSupported($asset->mime_type) && $asset->cloudinary_url) {
+            $extractedText = $extractor->extract($asset->cloudinary_url, $asset->mime_type);
+            if (!empty($extractedText)) {
+                $asset->update(['extracted_text' => $extractedText]);
+            }
+        }
+
         $metadata = $gemini->generateAssetMetadata(
             $asset->original_name,
             $asset->mime_type,
             $asset->path,
-            $asset->cloudinary_url
+            $asset->cloudinary_url,
+            $extractedText
         );
 
-        AssetMetadata::create([
-            'asset_id'     => $asset->id,
-            'title'        => $metadata['title'],
-            'description'  => $metadata['description'],
-            'tags'         => $metadata['tags'],
-            'ai_generated' => true,
-        ]);
+        AssetMetadata::updateOrCreate(
+            ['asset_id' => $asset->id],
+            [
+                'title'        => $metadata['title'],
+                'description'  => $metadata['description'],
+                'tags'         => $metadata['tags'],
+                'ai_generated' => true,
+            ]
+        );
 
         $duplicateDetector = app(DuplicateDetectionService::class);
         $duplicateDetector->findSimilar(
@@ -75,6 +93,6 @@ class ProcessAssetAI implements ShouldQueue
             'error'    => $exception->getMessage(),
         ]);
 
-        Asset::where('id', $this->assetId)->update(['status' => 'failed']);
+        Asset::where('id', $this->assetId)->update(['status' => 'error']);
     }
 }

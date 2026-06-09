@@ -5,12 +5,13 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libzip-dev \
+    libpq-dev \
     zip \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql zip
+RUN docker-php-ext-install pdo_mysql pdo_pgsql zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -25,11 +26,15 @@ RUN composer install --no-scripts --no-dev --prefer-dist --optimize-autoloader
 # Copy application code
 COPY . .
 
+# Create required directories and set permissions before post-install scripts
+RUN mkdir -p bootstrap/cache storage/logs \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    && chmod -R 775 bootstrap/cache storage \
+    && chown -R www-data:www-data bootstrap/cache storage
+
 # Run post-install scripts
 RUN composer dump-autoload --optimize
-
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage \
-    && chmod -R 775 /var/www/html/storage
 
 EXPOSE 8000

@@ -1,23 +1,90 @@
+# RJC — Mnemos production deploy configuration for Render
+# Values marked sync:false must be filled in the Render dashboard (Secrets).
+# Values with explicit `value:` are safe to commit.
+
 services:
   - type: web
-    name: mnemos
-    env: php
-    buildCommand: composer install --no-dev && php artisan config:clear && php artisan route:cache && php artisan migrate --force
-    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT & php artisan queue:work --timeout=60 --tries=3 --sleep=3
+    name: mnemos-backend
+    env: docker
+    region: frankfurt
+    plan: free
+    buildCommand: >-
+      composer install --no-dev --optimize-autoloader &&
+      php artisan config:cache &&
+      php artisan route:cache &&
+      php artisan view:cache &&
+      php artisan migrate --force
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
     envVars:
+      # ── Application ──────────────────────────────────────────────────────────
+      - key: APP_NAME
+        value: Mnemos
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
         value: false
       - key: APP_KEY
         generateValue: true
+      - key: APP_URL
+        sync: false        # paste the Render service URL after first deploy
+                           # e.g. https://mnemos-backend.onrender.com
+
+      # ── Frontend / CORS ───────────────────────────────────────────────────────
+      - key: FRONTEND_URL
+        value: https://mnemos.netlify.app
+
+      # ── Database (Supabase) ───────────────────────────────────────────────────
       - key: DB_CONNECTION
         value: pgsql
-      - key: DB_PORT
-        value: 5432
-      - key: DB_DATABASE
-        value: postgres
-      - key: DB_USERNAME
-        value: postgres
+      - key: DB_SSLMODE
+        value: require
+      - key: DATABASE_URL
+        sync: false        # paste Supabase connection string
+                           # format: postgresql://postgres.xxx:password@host:5432/postgres?sslmode=require
+
+      # ── Cloudinary ────────────────────────────────────────────────────────────
+      - key: CLOUDINARY_URL
+        sync: false        # format: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+      # ── Gemini AI ─────────────────────────────────────────────────────────────
+      - key: GEMINI_API_KEY
+        sync: false
+
+      # ── Email (Resend) ────────────────────────────────────────────────────────
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: smtp.resend.com
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USERNAME
+        value: resend
+      - key: MAIL_PASSWORD
+        sync: false        # Resend API key (starts with re_...)
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        value: noreply@mnemos.app
+      - key: MAIL_FROM_NAME
+        value: Mnemos
+
+      # ── Queue / Cache / Session ───────────────────────────────────────────────
+      # sync queue: no persistent worker needed on free tier
       - key: QUEUE_CONNECTION
-        value: database
+        value: sync
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+
+      # ── Logging ───────────────────────────────────────────────────────────────
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: error

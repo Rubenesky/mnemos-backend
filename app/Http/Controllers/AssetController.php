@@ -73,7 +73,7 @@ class AssetController extends Controller
         }
 
         // Upload to Cloudinary
-        $cloudinary       = new CloudinaryService();
+        $cloudinary       = app(CloudinaryService::class);
         $cloudinaryResult = $cloudinary->upload($file);
 
         // Also save locally as backup
@@ -97,7 +97,7 @@ class AssetController extends Controller
             $asset->categories()->sync($request->categories);
         }
 
-        $gemini   = new GeminiService();
+        $gemini   = app(GeminiService::class);
         $metadata = $gemini->generateAssetMetadata(
             $file->getClientOriginalName(),
             $file->getMimeType(),
@@ -115,7 +115,7 @@ class AssetController extends Controller
         $asset->update(['status' => 'processed']);
         $this->logActivity('upload', $asset, ['filename' => $asset->original_name]);
 
-        $duplicateDetector = new DuplicateDetectionService();
+        $duplicateDetector = app(DuplicateDetectionService::class);
         $similarAssets     = $duplicateDetector->findSimilar(
             $asset->id,
             $metadata['description'] ?? '',

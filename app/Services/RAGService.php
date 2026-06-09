@@ -25,35 +25,34 @@ class RAGService
         $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     }
 
+    private function sanitizeInput(string $input): string
+    {
+        $clean = preg_replace('/[\x00-\x1F\x7F]/u', ' ', $input);
+        return mb_substr(trim($clean), 0, 500);
+    }
+
     public function query(string $userQuestion): string
     {
-        // Step 1: Gather real data from the database as context
+        $userQuestion = $this->sanitizeInput($userQuestion);
+
         $context = Cache::remember('rag_context', 300, fn() => $this->gatherContext());
 
-        // Step 2: Send the context + question to Gemini
-        $prompt = "You are an intelligent assistant for Mnemos, a digital asset management system.
-
+        $systemInstruction = "You are an intelligent assistant for Mnemos, a digital asset management system.
 You have access to the following REAL and CURRENT data from the platform:
-
 {$context}
-
-The user asks you this question: \"{$userQuestion}\"
-
-Respond in English clearly and concisely, basing your answer ONLY on the data provided above.
+Respond clearly and concisely, basing your answer ONLY on the data provided above.
 If the question cannot be answered with the available data, say so clearly.
 Do not invent data. Do not use information that is not in the context.
 Respond in a maximum of 1-3 sentences in a conversational tone.";
 
         try {
-            $response = Http::post("{$this->apiUrl}?key={$this->apiKey}", [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
-                ]
-            ]);
+            $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])
+                ->post($this->apiUrl, [
+                    'system_instruction' => ['parts' => [['text' => $systemInstruction]]],
+                    'contents' => [
+                        ['role' => 'user', 'parts' => [['text' => $userQuestion]]],
+                    ],
+                ]);
 
             if ($response->failed()) {
                 Log::error('RAG error', ['response' => $response->body()]);
@@ -134,6 +133,20 @@ Respond in a maximum of 1-3 sentences in a conversational tone.";
         $totalSizeKB = Asset::sum('size') / 1024;
         $totalSizeMB = round($totalSizeKB / 1024, 2);
 
+        // Documents with extracted text content
+        $documentCount    = Asset::whereNotNull('extracted_text')->count();
+        $documentSnippets = Asset::whereNotNull('extracted_text')
+            ->with('metadata')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($a) {
+                $title   = $a->metadata?->title ?? $a->original_name;
+                $snippet = mb_substr($a->extracted_text, 0, 200);
+                return "'{$title}': {$snippet}";
+            })
+            ->join("\n- ");
+
         return "
 GENERAL STATISTICS:
 - Total assets in the platform: {$totalAssets}
@@ -160,6 +173,9 @@ RECENTLY UPLOADED ASSETS:
 
 RECENT ACTIVITY:
 {$recentActivity}
+
+DOCUMENT CONTENTS ({$documentCount} documents with extracted text):
+- {$documentSnippets}
 
 CURRENT DATE: " . now()->format('Y-m-d H:i') . "
 ";
