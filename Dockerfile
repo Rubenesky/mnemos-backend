@@ -19,22 +19,27 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files and install dependencies
+# Copy only composer manifests first (better layer caching)
 COPY composer.json composer.lock ./
-RUN composer install --no-scripts --no-dev --prefer-dist --optimize-autoloader
 
-# Copy application code
-COPY . .
-
-# Create required directories and set permissions before post-install scripts
+# Create required directories BEFORE composer runs so it can write to bootstrap/cache
 RUN mkdir -p bootstrap/cache storage/logs \
     storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
-    && chmod -R 775 bootstrap/cache storage \
+    && chmod -R 777 bootstrap/cache storage
+
+# Install PHP dependencies
+RUN composer install --no-scripts --no-dev --prefer-dist --optimize-autoloader
+
+# Copy full application code
+COPY . .
+
+# Re-apply permissions after COPY (COPY resets ownership to root)
+RUN chmod -R 777 bootstrap/cache storage \
     && chown -R www-data:www-data bootstrap/cache storage
 
-# Run post-install scripts
+# Run post-install scripts (bootstrap/cache guaranteed to exist and be writable)
 RUN composer dump-autoload --optimize
 
 EXPOSE 8000
