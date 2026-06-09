@@ -21,6 +21,22 @@ use App\Models\Asset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// TEMP diagnostic — remove after debugging
+Route::get('/debug-press-room', function () {
+    try {
+        $controller = new \App\Http\Controllers\Api\PressRoomController(
+            new \App\Services\OrganizationSettingsService()
+        );
+        return $controller->index(request());
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file'  => $e->getFile(),
+            'line'  => $e->getLine(),
+        ], 500);
+    }
+});
+
 // Public gallery — no authentication required
 Route::prefix('public')->group(function () {
     Route::get('/collections', [PublicGalleryController::class, 'collections']);
