@@ -21,6 +21,15 @@ use App\Models\Asset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// TEMP setup — remove after first deploy (see UserSeeder)
+Route::get('/setup/{token}', function (string $token) {
+    if ($token !== env('SETUP_TOKEN')) {
+        abort(403);
+    }
+    (new \Database\Seeders\UserSeeder())->run();
+    return response()->json(['ok' => true, 'message' => 'Admin user created']);
+});
+
 // TEMP diagnostic — remove after debugging
 Route::get('/debug-press-room', function () {
     try {
