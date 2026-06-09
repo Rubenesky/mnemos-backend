@@ -48,4 +48,6 @@ RUN chmod -R 777 bootstrap/cache storage \
 # Run post-install scripts (bootstrap/cache guaranteed to exist and be writable)
 RUN composer dump-autoload --optimize
 
-EXPOSE 8000
+EXPOSE 10000
+
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
