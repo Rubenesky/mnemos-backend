@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Asset;
 use App\Models\AssetMetadata;
+use App\Services\AIProvenanceService;
 use App\Services\DuplicateDetectionService;
 use App\Services\GeminiService;
 use App\Services\TextExtractionService;
@@ -39,8 +40,10 @@ class ProcessAssetAI implements ShouldQueue
             return;
         }
 
-        $gemini        = app(GeminiService::class);
-        $extractor     = app(TextExtractionService::class);
+        $gemini     = app(GeminiService::class);
+        $extractor  = app(TextExtractionService::class);
+        $provenance = app(AIProvenanceService::class);
+
         $extractedText = null;
 
         if ($extractor->isSupported($asset->mime_type) && $asset->cloudinary_url) {
@@ -68,6 +71,22 @@ class ProcessAssetAI implements ShouldQueue
             ]
         );
 
+        // Record provenance for the metadata generation
+        try {
+            $provenance->recordGeneration(
+                $asset,
+                'description',
+                GeminiService::MODEL,
+                "Generate metadata (title, description, tags) for {$asset->mime_type}: {$asset->original_name}",
+                mb_substr($metadata['description'] ?? '', 0, 200)
+            );
+        } catch (\Throwable $e) {
+            Log::warning('AIProvenance: failed to record metadata generation', [
+                'asset_id' => $asset->id,
+                'error'    => $e->getMessage(),
+            ]);
+        }
+
         $duplicateDetector = app(DuplicateDetectionService::class);
         $duplicateDetector->findSimilar(
             $asset->id,
@@ -80,6 +99,22 @@ class ProcessAssetAI implements ShouldQueue
             $altText = $gemini->generateAltText($asset->cloudinary_url);
             if (!empty($altText)) {
                 $asset->update(['alt_text' => $altText]);
+
+                // Record provenance for the alt-text generation
+                try {
+                    $provenance->recordGeneration(
+                        $asset->fresh(),
+                        'alt_text',
+                        GeminiService::MODEL,
+                        "Generate alt-text for image: {$asset->original_name}",
+                        mb_substr($altText, 0, 200)
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('AIProvenance: failed to record alt-text generation', [
+                        'asset_id' => $asset->id,
+                        'error'    => $e->getMessage(),
+                    ]);
+                }
             }
         }
 

@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\RAGController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SearchApiController;
 use App\Http\Controllers\Api\Admin\GdprDashboardController;
+use App\Http\Controllers\Api\ProvenanceController;
 use App\Http\Controllers\Api\Admin\OrganizationSettingsController;
 use App\Http\Controllers\Api\Admin\SystemStatusController;
 use App\Http\Controllers\Api\Admin\VolunteerController;
@@ -88,6 +89,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/assets/{asset}', [AssetApiController::class, 'update']);
     Route::delete('/assets/{asset}', [AssetApiController::class, 'destroy']);
     Route::get('/assets/{asset}/audit', [AssetAuditController::class, 'index']);
+    Route::get('/assets/{asset}/provenance', [ProvenanceController::class, 'show']);
+    Route::post('/assets/{asset}/provenance/review', [ProvenanceController::class, 'markReviewed']);
     Route::post('/assets/{asset}/variants', [AssetApiController::class, 'variants'])->middleware('throttle:10,1');
 
     // Búsqueda por lenguaje natural

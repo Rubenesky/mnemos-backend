@@ -13,13 +13,16 @@ use Illuminate\Support\Facades\Storage;
  */
 class GeminiService
 {
+    /** Gemini model identifier — referenced by AIProvenanceService for audit logging. */
+    public const MODEL = 'gemini-2.5-flash';
+
     private string $apiKey;
     private string $apiUrl;
 
     public function __construct()
     {
         $this->apiKey = config('services.gemini.key');
-        $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' . self::MODEL . ':generateContent';
     }
 
     public function generateAssetMetadata(string $filename, string $mimeType, ?string $storagePath = null, ?string $cloudinaryUrl = null, ?string $extractedText = null): array
