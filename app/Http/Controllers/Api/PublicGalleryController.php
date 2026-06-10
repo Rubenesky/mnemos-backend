@@ -95,10 +95,13 @@ class PublicGalleryController extends Controller
      */
     public function collections(): JsonResponse
     {
-        $collections = Category::where('is_public', true)
+        // select() must precede withCount() so the aggregate is appended to
+        // the specified columns rather than being overwritten by ->get([...]).
+        $collections = Category::select('id', 'name', 'slug', 'description')
+            ->where('is_public', true)
             ->withCount(['assets' => fn ($q) => $q->where('is_public', true)->where('status', 'processed')])
             ->orderBy('name')
-            ->get(['id', 'name', 'slug', 'description']);
+            ->get();
 
         return response()->json([
             'org_name' => $this->settings->get('org_name', 'Mnemos'),

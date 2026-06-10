@@ -137,3 +137,19 @@ test('returns 404 when collection_id does not exist', function () {
     $this->getJson('/api/public/assets?collection_id=99999')
          ->assertNotFound();
 });
+
+test('public collections response includes assets_count', function () {
+    $user     = User::factory()->create();
+    $category = Category::factory()->create(['is_public' => true]);
+    $asset    = Asset::factory()->create([
+        'user_id'   => $user->id,
+        'is_public' => true,
+        'status'    => 'processed',
+    ]);
+    $asset->categories()->attach($category);
+
+    $this->getJson('/api/public/collections')
+         ->assertOk()
+         ->assertJsonStructure(['org_name', 'data'])
+         ->assertJsonPath('data.0.assets_count', 1);
+});
