@@ -103,3 +103,37 @@ test('response includes org_name from settings', function () {
          ->assertOk()
          ->assertJsonStructure(['org_name']);
 });
+
+test('filters by collection_id when provided', function () {
+    $user     = User::factory()->create();
+    $category = Category::factory()->create(['is_public' => true]);
+
+    $inCollection = Asset::factory()->create([
+        'user_id'   => $user->id,
+        'is_public' => true,
+        'status'    => 'processed',
+    ]);
+    $inCollection->categories()->attach($category);
+
+    Asset::factory()->create([
+        'user_id'   => $user->id,
+        'is_public' => true,
+        'status'    => 'processed',
+    ]);
+
+    $this->getJson("/api/public/assets?collection_id={$category->id}")
+         ->assertOk()
+         ->assertJsonPath('total', 1);
+});
+
+test('returns 403 when collection_id belongs to a private collection', function () {
+    $category = Category::factory()->create(['is_public' => false]);
+
+    $this->getJson("/api/public/assets?collection_id={$category->id}")
+         ->assertForbidden();
+});
+
+test('returns 404 when collection_id does not exist', function () {
+    $this->getJson('/api/public/assets?collection_id=99999')
+         ->assertNotFound();
+});

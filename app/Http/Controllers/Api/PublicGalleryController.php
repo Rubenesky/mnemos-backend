@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
  * Serves public-facing gallery endpoints — no authentication required.
  *
  * @package App\Http\Controllers\Api
+ * @author  RJC
  */
 class PublicGalleryController extends Controller
 {
@@ -27,16 +28,19 @@ class PublicGalleryController extends Controller
      * GET /api/public/assets
      *
      * Returns all public processed assets, paginated. Does not require a collection.
-     * Accepts an optional ?collection={slug} query parameter to filter by a public category.
+     *
+     * Accepts two optional filter parameters — only one is applied at a time,
+     * with collection_id taking precedence over collection:
+     *
+     *   ?collection_id={int}  Filter by category ID. Returns 404 if the category
+     *                         does not exist, 403 if it exists but is not public.
+     *   ?collection={slug}    Filter by category slug. Silently ignored if the
+     *                         slug belongs to a private category (backwards-compat).
      *
      * @param  Request  $request
-     * @return JsonResponse  200 {
-     *   org_name: string,
-     *   data: Asset[],
-     *   current_page: int,
-     *   last_page: int,
-     *   total: int
-     * }
+     * @return JsonResponse  200 { org_name, data, current_page, last_page, total }
+     *                     | 403 if collection_id points to a private category
+     *                     | 404 if collection_id does not exist
      */
     public function assets(Request $request): JsonResponse
     {
@@ -45,7 +49,22 @@ class PublicGalleryController extends Controller
             ->with('metadata', 'categories')
             ->latest();
 
-        if ($request->filled('collection')) {
+        // collection_id takes precedence — strict: 404 if missing, 403 if private
+        if ($request->filled('collection_id')) {
+            $category = Category::find($request->integer('collection_id'));
+
+            if (! $category) {
+                return response()->json(['message' => 'Collection not found.'], 404);
+            }
+
+            if (! $category->is_public) {
+                return response()->json(['message' => 'This collection is not public.'], 403);
+            }
+
+            $query->whereHas('categories', fn ($q) => $q->where('categories.id', $category->id));
+
+        } elseif ($request->filled('collection')) {
+            // Legacy slug-based filter — silently ignores private/missing collections
             $category = Category::where('slug', $request->input('collection'))
                 ->where('is_public', true)
                 ->first();
