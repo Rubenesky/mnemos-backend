@@ -95,7 +95,7 @@ class BulkUploadController extends Controller
     {
         $request->validate([
             'files'   => ['required', 'array', 'min:1', 'max:' . self::MAX_FILES],
-            'files.*' => ['file'],
+            'files.*' => ['file', 'max:51200'],
         ]);
 
         $results = [];
