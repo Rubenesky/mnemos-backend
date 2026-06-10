@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AssetApiController;
+use App\Http\Controllers\Api\BulkUploadController;
 use App\Http\Controllers\Api\CollectionController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AssetAuditController;
@@ -67,6 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
     })->middleware('throttle:60,1');
 
     // Assets API
+    Route::post('/assets/bulk', [BulkUploadController::class, 'store'])->middleware('throttle:3,1');
     Route::get('/assets', [AssetApiController::class, 'index']);
     Route::post('/assets', [AssetApiController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/assets/{asset}', [AssetApiController::class, 'show']);
