@@ -57,6 +57,7 @@ class ImpactDashboardService
                 'assets_last_30_days'   => Asset::where('created_at', '>=', now()->subDays(30))->count(),
                 'consents_last_30_days' => Consent::where('created_at', '>=', now()->subDays(30))->count(),
                 'assets_by_month'       => $this->assetsByMonth(),
+                'consents_by_month'     => $this->consentsByMonth(),
             ],
             'top_assets' => $this->topAssets(),
         ];
@@ -83,6 +84,35 @@ class ImpactDashboardService
         }
 
         Asset::where('created_at', '>=', now()->subMonths(5)->startOfMonth())
+            ->pluck('created_at')
+            ->each(function ($date) use (&$months) {
+                $key = $date->format('Y-m');
+                if (array_key_exists($key, $months)) {
+                    $months[$key]++;
+                }
+            });
+
+        return collect($months)
+            ->map(fn ($count, $month) => ['month' => $month, 'count' => $count])
+            ->values()
+            ->toArray();
+    }
+
+    /**
+     * Return consent creation counts grouped by calendar month for the last 6 months.
+     *
+     * Same PHP-side grouping strategy as assetsByMonth() for cross-DB compatibility.
+     *
+     * @return list<array{month: string, count: int}>
+     */
+    private function consentsByMonth(): array
+    {
+        $months = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $months[now()->subMonths($i)->format('Y-m')] = 0;
+        }
+
+        Consent::where('created_at', '>=', now()->subMonths(5)->startOfMonth())
             ->pluck('created_at')
             ->each(function ($date) use (&$months) {
                 $key = $date->format('Y-m');
