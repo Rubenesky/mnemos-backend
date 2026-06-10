@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
+use App\Models\AssetView;
 use App\Models\Category;
 use App\Services\OrganizationSettingsService;
 use Illuminate\Http\JsonResponse;
@@ -161,6 +162,15 @@ class PublicGalleryController extends Controller
             ->where('status', 'processed')
             ->with('metadata', 'categories')
             ->firstOrFail();
+
+        // Record view — wrapped in try/catch so a DB hiccup never breaks the response
+        try {
+            AssetView::create([
+                'asset_id' => $asset->id,
+                'ip_hash'  => hash('sha256', request()->ip() ?? ''),
+            ]);
+        } catch (\Throwable) {
+        }
 
         return response()->json(['data' => $this->formatAsset($asset)]);
     }

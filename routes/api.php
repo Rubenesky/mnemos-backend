@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\RAGController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SearchApiController;
 use App\Http\Controllers\Api\Admin\GdprDashboardController;
+use App\Http\Controllers\Api\ImpactDashboardController;
 use App\Http\Controllers\Api\ProvenanceController;
 use App\Http\Controllers\Api\Admin\OrganizationSettingsController;
 use App\Http\Controllers\Api\Admin\SystemStatusController;
@@ -117,6 +118,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/emergency-kit/download', [EmergencyKitController::class, 'download']);
 
     Route::get('/reports/impact', [ReportController::class, 'impact'])->middleware('throttle:3,1');
+    Route::get('/reports/impact-dashboard', [ImpactDashboardController::class, 'dashboard'])->middleware('throttle:12,1');
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
 

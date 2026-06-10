@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessAssetAI;
 use App\Mail\AssetUploadNotificationMail;
 use App\Models\Asset;
+use App\Models\AssetView;
 use App\Models\User;
 use App\Services\AIVariantsService;
 use App\Services\NotificationService;
@@ -163,6 +164,15 @@ class AssetApiController extends Controller
         }
 
         $asset->load(['user', 'metadata', 'categories']);
+
+        // Record view — wrapped in try/catch so a DB hiccup never breaks the response
+        try {
+            AssetView::create([
+                'asset_id' => $asset->id,
+                'ip_hash'  => hash('sha256', request()->ip() ?? ''),
+            ]);
+        } catch (\Throwable) {
+        }
 
         return response()->json([
             'success' => true,

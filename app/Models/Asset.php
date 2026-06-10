@@ -85,6 +85,12 @@ class Asset extends Model
         return $this->hasMany(AiGeneration::class);
     }
 
+    /** Returns all view events recorded for this asset. */
+    public function assetViews(): HasMany
+    {
+        return $this->hasMany(AssetView::class);
+    }
+
     /** Returns the user who reviewed the AI-generated content, if any. */
     public function reviewer(): BelongsTo
     {
