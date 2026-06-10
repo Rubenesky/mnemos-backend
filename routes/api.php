@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\PublicGalleryController;
 use App\Http\Controllers\Api\RAGController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SearchApiController;
+use App\Http\Controllers\Api\Admin\GdprDashboardController;
 use App\Http\Controllers\Api\Admin\OrganizationSettingsController;
 use App\Http\Controllers\Api\Admin\SystemStatusController;
 use App\Http\Controllers\Api\Admin\VolunteerController;
@@ -147,5 +148,9 @@ Route::middleware('auth:sanctum')->group(function () {
         // Volunteer management
         Route::get('/volunteers', [VolunteerController::class, 'index']);
         Route::patch('/volunteers/{user}/extend', [VolunteerController::class, 'extend']);
+
+        // GDPR Intelligence Panel
+        Route::get('/gdpr/dashboard', [GdprDashboardController::class, 'dashboard']);
+        Route::get('/gdpr/audit/export', [GdprDashboardController::class, 'exportCsv']);
     });
 });
