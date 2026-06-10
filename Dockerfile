@@ -55,4 +55,5 @@ RUN composer dump-autoload --optimize
 
 EXPOSE 10000
 
-CMD ["php", "-S", "0.0.0.0:10000", "-t", "public", "public/router.php"]
+# Run migrations at container startup (DB is accessible here, unlike during image build)
+CMD ["sh", "-c", "php artisan migrate --force && php -S 0.0.0.0:10000 -t public public/router.php"]
