@@ -14,7 +14,7 @@ trait LogsActivity
             'entity_type' => $entity ? class_basename($entity) : null,
             'entity_id'   => $entity?->id,
             'metadata'    => !empty($metadata) ? $metadata : null,
-            'ip_address'  => request()->ip(),
+            'ip_hash'     => hash('sha256', request()->ip() ?? ''),
         ]);
     }
 }

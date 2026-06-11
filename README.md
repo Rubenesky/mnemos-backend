@@ -2,7 +2,7 @@
 
 ### *Open memory for organizations that matter*
 
-[![Tests](https://img.shields.io/badge/tests-192%20passed-brightgreen.svg)](#running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-278%20passed-brightgreen.svg)](#running-the-tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![PHP 8.2](https://img.shields.io/badge/PHP-8.2-blue.svg)](https://www.php.net/)
 [![Laravel 10](https://img.shields.io/badge/Laravel-10-red.svg)](https://laravel.com/)
@@ -288,7 +288,7 @@ Use [GitHub Issues](https://github.com/rubenesky/mnemos-backend/issues). Please 
 ./vendor/bin/pest
 ```
 
-The test suite currently covers **90 tests / 204+ assertions** across authorization, security, IDOR, asset CRUD, consent tokens, notifications, and AI processing.
+The test suite currently covers **278 tests / 749 assertions** across authorization, security, IDOR, asset CRUD, consent tokens, notifications, and AI processing.
 
 ---
 

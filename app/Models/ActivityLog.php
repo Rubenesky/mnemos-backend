@@ -20,7 +20,7 @@ class ActivityLog extends Model
         'entity_type',
         'entity_id',
         'metadata',
-        'ip_address',
+        'ip_hash',
     ];
 
     protected $casts = [

@@ -20,7 +20,7 @@ it('admin can view the audit trail of any asset', function () {
         'entity_type' => 'Asset',
         'entity_id'   => $asset->id,
         'metadata'    => ['filename' => 'photo.jpg'],
-        'ip_address'  => '127.0.0.1',
+        'ip_hash'     => hash('sha256', '127.0.0.1'),
     ]);
 
     $this->actingAs($admin, 'sanctum')
@@ -39,7 +39,7 @@ it('editor can view the audit trail of their own asset', function () {
         'entity_type' => 'Asset',
         'entity_id'   => $asset->id,
         'metadata'    => ['filename' => 'doc.pdf'],
-        'ip_address'  => '127.0.0.1',
+        'ip_hash'     => hash('sha256', '127.0.0.1'),
     ]);
 
     $this->actingAs($editor, 'sanctum')
@@ -86,7 +86,7 @@ it('returns entries in chronological order', function () {
         'entity_type' => 'Asset',
         'entity_id'   => $asset->id,
         'metadata'    => ['filename' => 'file.jpg'],
-        'ip_address'  => '127.0.0.1',
+        'ip_hash'     => hash('sha256', '127.0.0.1'),
         'created_at'  => now()->subHours(2),
     ]);
 
@@ -96,7 +96,7 @@ it('returns entries in chronological order', function () {
         'entity_type' => 'Asset',
         'entity_id'   => $asset->id,
         'metadata'    => null,
-        'ip_address'  => '127.0.0.1',
+        'ip_hash'     => hash('sha256', '127.0.0.1'),
         'created_at'  => now()->subHour(),
     ]);
 
@@ -119,7 +119,7 @@ it('resolves upload detail from metadata filename', function () {
         'entity_type' => 'Asset',
         'entity_id'   => $asset->id,
         'metadata'    => ['filename' => 'report.pdf'],
-        'ip_address'  => '127.0.0.1',
+        'ip_hash'     => hash('sha256', '127.0.0.1'),
     ]);
 
     $data = $this->actingAs($admin, 'sanctum')
