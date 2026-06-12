@@ -1,8 +1,8 @@
 # Mnemos
 
-### *Open memory for organizations that matter*
+### *Memoria abierta para las organizaciones que importan*
 
-[![Tests](https://img.shields.io/badge/tests-278%20passed-brightgreen.svg)](#running-the-tests)
+[![Tests](https://img.shields.io/badge/tests-281%20passed-brightgreen.svg)](#ejecutar-los-tests)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![PHP 8.2](https://img.shields.io/badge/PHP-8.2-blue.svg)](https://www.php.net/)
 [![Laravel 10](https://img.shields.io/badge/Laravel-10-red.svg)](https://laravel.com/)
@@ -11,103 +11,111 @@
 
 ---
 
-Mnemos is a free, open-source digital archive system built for NGOs, cultural foundations, educational institutions, and community organizations. It gives your team a single, searchable home for all your photos, videos, and documents — with GDPR consent tracking and AI-powered accessibility built in.
+Mnemos es un sistema de archivo digital gratuito y de código abierto, construido para ONGs, fundaciones culturales, centros educativos y organizaciones comunitarias. Ofrece a tu equipo un espacio único y con motor de búsqueda para todas tus fotos, vídeos y documentos — con seguimiento de consentimiento RGPD e inteligencia artificial para accesibilidad, integrados de serie.
 
 ---
 
-## The Problem
+## El Problema
 
-Most organizations are losing their institutional memory right now, and they do not know it.
+La mayoría de las organizaciones están perdiendo su memoria institucional ahora mismo, y no lo saben.
 
-**1. No structured archive**
-Photos, videos, and documents are scattered across WhatsApp groups, shared Google Drive folders, and email threads that span years. When someone asks *"do we have a photo from the 2019 campaign?"* the honest answer is usually *"somewhere, maybe."* There is no way to search, no consistent naming, and no single place to look.
+**1. Sin archivo estructurado**
+Las fotos, vídeos y documentos están dispersos entre grupos de WhatsApp, carpetas compartidas de Google Drive e hilos de correo que se extienden por años. Cuando alguien pregunta *"¿tenemos alguna foto de la campaña de 2019?"*, la respuesta honesta suele ser *"en algún sitio, quizá"*. No hay forma de buscar, no hay nomenclatura consistente y no hay un único lugar donde mirar.
 
-**2. No consent tracking**
-Organizations regularly publish images of volunteers, program participants, and minors — without any documented record that consent was obtained. Under GDPR, this is not just a procedural gap: it is legal exposure. When an audit or a complaint arrives, there is no paper trail to produce.
+**2. Sin registro de consentimiento**
+Las organizaciones publican regularmente imágenes de voluntarios, participantes de programas y menores — sin ningún registro documentado de que se obtuvo el consentimiento. Bajo el RGPD, esto no es solo un vacío procedimental: es una exposición legal. Cuando llega una auditoría o una reclamación, no hay rastro en papel que presentar.
 
-**3. Technical barrier**
-Professional digital archive tools — Canto, Bynder, Brandfolder — cost thousands of euros per year and require a dedicated IT department to install, configure, and maintain. They are built for marketing teams at corporations, not for a team of five running after-school programs.
+**3. Barrera técnica**
+Las herramientas profesionales de archivo digital — Canto, Bynder, Brandfolder — cuestan miles de euros al año y requieren un departamento de IT dedicado para instalarlas, configurarlas y mantenerlas. Están diseñadas para equipos de marketing en grandes corporaciones, no para un equipo de cinco personas gestionando programas extraescolares.
 
-Mnemos removes all three barriers. It is free, installs in one command, and is designed to be used by people who are not technical.
-
----
-
-## 🏛️ A Real Use Case
-
-The Fundació Memòria Viva in Lleida has spent 20 years collecting photographs, oral histories, and handwritten documents from elderly residents — an irreplaceable record of mid-20th century rural life in Catalonia. For most of that time, those materials lived in cardboard boxes, external hard drives, and a shared Dropbox folder that nobody fully understood. Volunteers came and went; institutional knowledge walked out the door with them.
-
-With Mnemos, the foundation ingests a digitized photograph, and the system automatically generates an accessible description of its contents via AI — a medieval farmhouse at dusk, three women sorting grain, a child watching from a doorway. That description makes the image findable by anyone searching "farmhouse" or "harvest" years later. Consent records for every living person pictured are tracked directly in the system, color-coded by status, and blocked from public publication until documented. A public gallery URL lets the foundation share curated collections with researchers and journalists without requiring any login. And when a new volunteer joins for the summer, they get a temporary Volunteer role that expires automatically the day they leave — no forgotten admin accounts, no manual cleanup.
-
-This is what Mnemos is for.
+Mnemos elimina las tres barreras. Es gratuito, se instala con un solo comando y está diseñado para ser usado por personas sin perfil técnico.
 
 ---
 
-## ✨ Features
+## 🏛️ Un Caso de Uso Real
 
-**1. Public Gallery**
-Share asset collections publicly without requiring a login. Each collection gets its own shareable URL. Ideal for sharing press kits, exhibitions, or open archives with the outside world.
+La Fundació Memòria Viva de Lleida lleva 20 años recopilando fotografías, historias orales y documentos manuscritos de residentes mayores — un registro insustituible de la vida rural catalana a mediados del siglo XX. Durante la mayor parte de ese tiempo, esos materiales vivían en cajas de cartón, discos duros externos y una carpeta de Dropbox compartida que nadie entendía del todo. Los voluntarios llegaban y se iban; el conocimiento institucional se marchaba con ellos.
 
-**2. 🔒 GDPR Consent Panel**
-Track consent status per asset with a color-coded dashboard: obtained (green), pending (yellow), denied (red). Assets without documented consent are automatically blocked from public publication. Audit-ready at any time.
+Con Mnemos, la fundación ingiere una fotografía digitalizada y el sistema genera automáticamente una descripción accesible de su contenido mediante IA — una masía medieval al atardecer, tres mujeres seleccionando grano, un niño observando desde el umbral. Esa descripción hace que la imagen sea encontrable por cualquiera que busque "masía" o "cosecha" años más tarde. Los registros de consentimiento de cada persona viva fotografiada se gestionan directamente en el sistema, codificados por color según su estado, y bloqueados para su publicación pública hasta que estén documentados. Una URL de galería pública permite a la fundación compartir colecciones curadas con investigadores y periodistas sin necesidad de ningún inicio de sesión. Y cuando se incorpora un nuevo voluntario para el verano, recibe un rol de Voluntario temporal que expira automáticamente el día que se marcha — sin cuentas de administrador olvidadas, sin limpieza manual.
 
-**3. 🚀 Zero-tech Install**
-One command gets you running: `./install.sh`. No server configuration knowledge required. Docker handles everything. If you can open a terminal and paste a command, you can install Mnemos.
-
-**4. AI Auto Alt-text**
-Every image you upload automatically receives an accessibility description generated by Google Gemini Vision. This makes your archive screen-reader compatible and improves searchability — without any manual work.
-
-**5. Volunteer Role**
-A temporary access level between Viewer and Editor, with a configurable expiry date. Perfect for interns, short-term project volunteers, or students on placement. Access disappears automatically when the period ends.
-
-**6. Multilingual**
-Full Spanish and English support throughout the interface, powered by Laravel's i18n system. More languages can be added by the community.
-
-**7. 🔗 Token-Based Consent Requests**
-Generate a shareable link for any pending consent record and send it directly to the person whose consent is required. The recipient opens the link — no account needed — reviews the details, and accepts or denies in one click. The decision is recorded instantly and admins are notified automatically.
-
-**8. 🔔 Internal Notification System**
-Real-time bell icon in the topbar keeps admins informed without email. Notifications fire automatically when a volunteer uploads an asset or when someone responds to a consent request. Unread count badge, per-item mark-as-read, and "mark all read" — all persisted in the database.
-
-**9. 🧭 Guided Onboarding**
-A 3-step modal greets every new user on their first login, explaining what Mnemos does and how to get started. Shown once and never again (tracked in localStorage). No separate redirect or page — it appears directly over the dashboard.
+Para esto está Mnemos.
 
 ---
 
-## 📸 Screenshots
+## ✨ Funcionalidades
 
-| Dashboard | Asset Gallery | GDPR Consent Panel |
+**1. Galería Pública**
+Comparte colecciones de recursos públicamente sin necesidad de inicio de sesión. Cada colección tiene su propia URL compartible. Ideal para compartir kits de prensa, exposiciones o archivos abiertos con el mundo exterior.
+
+**2. 🔒 Panel RGPD de Consentimientos**
+Registra el estado de consentimiento por recurso con un dashboard codificado por colores: obtenido (verde), pendiente (amarillo), denegado (rojo). Los recursos sin consentimiento documentado se bloquean automáticamente para su publicación pública. Listo para auditorías en cualquier momento.
+
+**3. 🚀 Instalación sin conocimientos técnicos**
+Un solo comando te pone en marcha: `./install.sh`. No se requieren conocimientos de configuración de servidores. Docker lo gestiona todo. Si puedes abrir una terminal y pegar un comando, puedes instalar Mnemos.
+
+**4. Alt-text automático con IA**
+Cada imagen que subes recibe automáticamente una descripción de accesibilidad generada por Google Gemini Vision. Esto hace tu archivo compatible con lectores de pantalla y mejora la búsqueda — sin ningún trabajo manual.
+
+**5. Rol de Voluntario**
+Un nivel de acceso temporal entre Visor y Editor, con una fecha de expiración configurable. Perfecto para becarios, voluntarios de proyectos puntuales o estudiantes en prácticas. El acceso desaparece automáticamente cuando finaliza el período.
+
+**6. Multilingüe**
+Soporte completo en español e inglés en toda la interfaz, impulsado por el sistema i18n de Laravel. La comunidad puede añadir más idiomas.
+
+**7. 🔗 Solicitudes de Consentimiento por Token**
+Genera un enlace compartible para cualquier registro de consentimiento pendiente y envíalo directamente a la persona cuyo consentimiento se requiere. El destinatario abre el enlace — sin necesidad de cuenta — revisa los detalles y acepta o deniega con un clic. La decisión se registra al instante y los administradores son notificados automáticamente.
+
+**8. 🔔 Sistema de Notificaciones Interno**
+El icono de campana en tiempo real en la barra superior mantiene informados a los administradores sin necesidad de correo electrónico. Las notificaciones se disparan automáticamente cuando un voluntario sube un recurso o cuando alguien responde a una solicitud de consentimiento. Contador de no leídos, marcado por elemento y "marcar todo como leído" — todo persistido en base de datos.
+
+**9. 🧭 Incorporación Guiada**
+Un modal de 3 pasos recibe a cada nuevo usuario en su primer inicio de sesión, explicando qué hace Mnemos y cómo empezar. Se muestra una sola vez y nunca más (registrado en localStorage). Sin redirección ni página separada — aparece directamente sobre el dashboard.
+
+---
+
+## 📸 Capturas de Pantalla
+
+| Dashboard | Galería de Recursos | Galería Pública |
 |---|---|---|
-| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Assets](docs/screenshots/02-assets.png) | ![Consents](docs/screenshots/04-consent-panel.png) |
+| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Recursos](docs/screenshots/02-assets.png) | ![Galería Pública](docs/screenshots/06-public-gallery.png) |
 
-| Asset Upload | AI Chat | Public Gallery |
+| Panel RGPD de Consentimientos | Chat IA | Sala de Prensa |
 |---|---|---|
-| ![Upload](docs/screenshots/03-upload.png) | ![RAG](docs/screenshots/05-ai-chat.png) | ![Gallery](docs/screenshots/06-public-gallery.png) |
+| ![Consentimientos](docs/screenshots/04-consent-panel.png) | ![Chat IA](docs/screenshots/05-ai-chat.png) | ![Sala de Prensa](docs/screenshots/10-press-room.png) |
 
-| Onboarding Modal | Notification Bell | Consent Request Form |
+| Subida de Recurso | Kit de Emergencia | Dashboard de Impacto |
 |---|---|---|
-| ![Onboarding](docs/screenshots/07-onboarding.png) | ![Notifications](docs/screenshots/08-notifications.png) | ![Consent Form](docs/screenshots/09-consent-form.png) |
+| ![Subida](docs/screenshots/03-upload.png) | ![Kit de Emergencia](docs/screenshots/11-emergency-kit.png) | ![Dashboard de Impacto](docs/screenshots/12-impact-dashboard.png) |
+
+| Panel de Administración | Campana de Notificaciones | Formulario de Consentimiento |
+|---|---|---|
+| ![Admin](docs/screenshots/13-admin-panel.png) | ![Notificaciones](docs/screenshots/08-notifications.png) | ![Formulario](docs/screenshots/09-consent-form.png) |
+
+| Modal de Bienvenida |
+|:---:|
+| ![Bienvenida](docs/screenshots/07-onboarding.png) |
 
 ---
 
-## Tech Stack
+## Stack Tecnológico
 
-| Layer | Technology |
+| Capa | Tecnología |
 |---|---|
 | Backend | PHP 8.2 / Laravel 10 |
-| Database | MySQL 8 |
-| API Authentication | Laravel Sanctum |
-| Asset Storage and CDN | Cloudinary |
-| AI (metadata, alt-text, search, chat) | Google Gemini |
-| Deployment | Docker Compose (optional) |
+| Base de datos | MySQL 8 |
+| Autenticación API | Laravel Sanctum |
+| Almacenamiento de recursos y CDN | Cloudinary |
+| IA (metadatos, alt-text, búsqueda, chat) | Google Gemini |
+| Despliegue | Docker Compose (opcional) |
 | Tests | Pest 2.x |
 
 ---
 
-## Installation
+## Instalación
 
-### Quick start with Docker (recommended)
+### Inicio rápido con Docker (recomendado)
 
-No prior technical knowledge required. You need Docker Desktop installed — [download it here](https://www.docker.com/products/docker-desktop/) — and then run:
+No se requieren conocimientos técnicos previos. Necesitas Docker Desktop instalado — [descárgalo aquí](https://www.docker.com/products/docker-desktop/) — y luego ejecuta:
 
 ```bash
 git clone https://github.com/rubenesky/mnemos-backend
@@ -116,11 +124,11 @@ chmod +x install.sh
 ./install.sh
 ```
 
-The install script sets up the database, generates your application key, and starts all services automatically. Your Mnemos instance will be available at `http://localhost:8000`.
+El script de instalación configura la base de datos, genera la clave de aplicación e inicia todos los servicios automáticamente. Tu instancia de Mnemos estará disponible en `http://localhost:8000`.
 
-### Manual install
+### Instalación manual
 
-If you prefer to run Mnemos without Docker, you will need PHP 8.2+, Composer, and MySQL installed on your machine.
+Si prefieres ejecutar Mnemos sin Docker, necesitarás PHP 8.2+, Composer y MySQL instalados en tu máquina.
 
 ```bash
 composer install
@@ -130,68 +138,68 @@ php artisan migrate --seed
 php artisan serve
 ```
 
-### Environment variables
+### Variables de entorno
 
-Copy `.env.example` to `.env` and fill in the following values:
+Copia `.env.example` a `.env` y completa los siguientes valores:
 
 ```env
-# Application
+# Aplicación
 APP_NAME=Mnemos
-APP_URL=http://localhost:8000          # The URL where Mnemos will be accessible
+APP_URL=http://localhost:8000          # URL donde Mnemos estará accesible
 
-# Database — your MySQL connection details
-DB_DATABASE=mnemos                     # The name of the database to create
-DB_USERNAME=root                       # Your MySQL username
-DB_PASSWORD=                           # Your MySQL password (leave blank if none)
+# Base de datos — datos de tu conexión MySQL
+DB_DATABASE=mnemos                     # Nombre de la base de datos a crear
+DB_USERNAME=root                       # Tu usuario de MySQL
+DB_PASSWORD=                           # Tu contraseña de MySQL (deja en blanco si no tienes)
 
-# Cloudinary — free account at cloudinary.com
-# All uploaded files are stored here
+# Cloudinary — cuenta gratuita en cloudinary.com
+# Todos los archivos subidos se almacenan aquí
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
-# Google Gemini — free API key at aistudio.google.com
-# Powers alt-text generation, natural language search, and AI chat
+# Google Gemini — API key gratuita en aistudio.google.com
+# Impulsa la generación de alt-text, búsqueda en lenguaje natural y chat IA
 GEMINI_API_KEY=your_gemini_api_key
 ```
 
-**Where to get the keys:**
-- Cloudinary: Create a free account at [cloudinary.com](https://cloudinary.com). Your credentials are on the Dashboard page.
-- Gemini API: Get a free key at [aistudio.google.com](https://aistudio.google.com). No billing required for standard usage.
+**Dónde obtener las claves:**
+- Cloudinary: Crea una cuenta gratuita en [cloudinary.com](https://cloudinary.com). Tus credenciales están en la página del Dashboard.
+- Gemini API: Obtén una clave gratuita en [aistudio.google.com](https://aistudio.google.com). No se requiere tarjeta de crédito para el uso estándar.
 
 ---
 
-## API Overview
+## Resumen de la API
 
-Mnemos exposes a REST API authenticated with Bearer tokens (Laravel Sanctum). All requests require an `Authorization: Bearer <token>` header except where noted.
+Mnemos expone una API REST autenticada con tokens Bearer (Laravel Sanctum). Todas las peticiones requieren una cabecera `Authorization: Bearer <token>` salvo donde se indique.
 
-| Method | Endpoint | Auth | Description |
+| Método | Endpoint | Auth | Descripción |
 |--------|----------|------|-------------|
-| POST | `/api/login` | No | Obtain an access token |
-| POST | `/api/logout` | Yes | Invalidate current token |
-| GET | `/api/assets` | Yes | List all assets (paginated) |
-| POST | `/api/assets` | Yes | Upload a new asset |
-| GET | `/api/assets/{id}` | Yes | Retrieve a single asset |
-| PATCH | `/api/assets/{id}` | Yes | Update asset metadata |
-| DELETE | `/api/assets/{id}` | Yes | Delete an asset |
-| GET | `/api/assets/{id}/status` | Yes | Poll AI processing status |
-| POST | `/api/search` | Yes | Natural language search |
-| POST | `/api/rag` | Yes | AI chat over your archive |
-| GET | `/api/health` | No | Health check — returns `{"ok":true}`, no DB query |
-| GET | `/api/public/assets` | No | Public asset list, paginated (no login) |
-| GET | `/api/public/gallery` | No | Public gallery (no login) |
-| GET | `/api/consents` | Yes | List consent records |
-| POST | `/api/consents` | Yes | Create a consent record |
-| PATCH | `/api/consents/{id}` | Yes | Update consent status |
-| DELETE | `/api/consents/{id}` | Yes | Remove a consent record |
-| POST | `/api/consents/{id}/send-request` | Yes | Generate a shareable consent request link |
-| GET | `/api/public/consents/{token}` | No | View consent form by token |
-| POST | `/api/public/consents/{token}` | No | Submit consent decision by token |
-| GET | `/api/notifications` | Yes | List notifications for current user |
-| POST | `/api/notifications/{id}/read` | Yes | Mark a notification as read |
-| POST | `/api/notifications/read-all` | Yes | Mark all notifications as read |
+| POST | `/api/login` | No | Obtener un token de acceso |
+| POST | `/api/logout` | Sí | Invalidar el token actual |
+| GET | `/api/assets` | Sí | Listar todos los recursos (paginado) |
+| POST | `/api/assets` | Sí | Subir un nuevo recurso |
+| GET | `/api/assets/{id}` | Sí | Obtener un recurso específico |
+| PATCH | `/api/assets/{id}` | Sí | Actualizar metadatos del recurso |
+| DELETE | `/api/assets/{id}` | Sí | Eliminar un recurso |
+| GET | `/api/assets/{id}/status` | Sí | Consultar estado del procesamiento IA |
+| POST | `/api/search` | Sí | Búsqueda en lenguaje natural |
+| POST | `/api/rag` | Sí | Chat IA sobre tu archivo |
+| GET | `/api/health` | No | Health check — devuelve `{"ok":true}`, sin consulta a BD |
+| GET | `/api/public/assets` | No | Lista pública de recursos, paginada (sin login) |
+| GET | `/api/public/gallery` | No | Galería pública (sin login) |
+| GET | `/api/consents` | Sí | Listar registros de consentimiento |
+| POST | `/api/consents` | Sí | Crear un registro de consentimiento |
+| PATCH | `/api/consents/{id}` | Sí | Actualizar estado de consentimiento |
+| DELETE | `/api/consents/{id}` | Sí | Eliminar un registro de consentimiento |
+| POST | `/api/consents/{id}/send-request` | Sí | Generar enlace de solicitud de consentimiento |
+| GET | `/api/public/consents/{token}` | No | Ver formulario de consentimiento por token |
+| POST | `/api/public/consents/{token}` | No | Enviar decisión de consentimiento por token |
+| GET | `/api/notifications` | Sí | Listar notificaciones del usuario actual |
+| POST | `/api/notifications/{id}/read` | Sí | Marcar una notificación como leída |
+| POST | `/api/notifications/read-all` | Sí | Marcar todas las notificaciones como leídas |
 
-**Login example:**
+**Ejemplo de inicio de sesión:**
 
 ```bash
 curl -X POST https://your-instance.com/api/login \
@@ -199,7 +207,7 @@ curl -X POST https://your-instance.com/api/login \
   -d '{"email": "admin@example.com", "password": "your-password"}'
 ```
 
-**Natural language search example:**
+**Ejemplo de búsqueda en lenguaje natural:**
 
 ```bash
 curl -X POST https://your-instance.com/api/search \
@@ -210,101 +218,101 @@ curl -X POST https://your-instance.com/api/search \
 
 ---
 
-## Keeping the service alive on Render free tier
+## Mantener el servicio activo en Render (plan gratuito)
 
-Render's free tier spins down services after 15 minutes of inactivity. The first request after a spin-down triggers a cold start that takes ~30 seconds, which makes the app appear broken to real users.
+El plan gratuito de Render detiene los servicios tras 15 minutos de inactividad. La primera petición tras una parada desencadena un arranque en frío de ~30 segundos, lo que hace que la aplicación parezca rota para los usuarios reales.
 
-The solution is a free external ping service that hits the backend every 5 minutes, preventing the spin-down entirely.
+La solución es un servicio externo gratuito que hace ping al backend cada 5 minutos, evitando completamente el apagado.
 
-### Option 1 — UptimeRobot (recommended, free)
+### Opción 1 — UptimeRobot (recomendado, gratuito)
 
-1. Create a free account at [uptimerobot.com](https://uptimerobot.com)
-2. Click **+ Add New Monitor**
-3. Fill in:
+1. Crea una cuenta gratuita en [uptimerobot.com](https://uptimerobot.com)
+2. Haz clic en **+ Add New Monitor**
+3. Rellena:
    - **Monitor Type**: `HTTP(s)`
    - **Friendly Name**: `Mnemos Backend`
    - **URL**: `https://mnemos-backend-if2n.onrender.com/api/health`
    - **Monitoring Interval**: `5 minutes`
-4. Click **Create Monitor**
+4. Haz clic en **Create Monitor**
 
-UptimeRobot will now ping `/api/health` every 5 minutes. The endpoint returns `{"ok": true}` instantly without touching the database, so there is no cost to pinging it frequently. As a bonus, UptimeRobot will send you an email alert if the service goes down.
+UptimeRobot hará ping a `/api/health` cada 5 minutos. El endpoint devuelve `{"ok": true}` instantáneamente sin consultar la base de datos, por lo que no hay coste en hacerle ping con frecuencia. Como ventaja adicional, UptimeRobot te enviará un aviso por correo si el servicio cae.
 
-### Option 2 — cron-job.org (alternative, also free)
+### Opción 2 — cron-job.org (alternativa, también gratuito)
 
-1. Create a free account at [cron-job.org](https://cron-job.org)
-2. Create a new cron job:
+1. Crea una cuenta gratuita en [cron-job.org](https://cron-job.org)
+2. Crea un nuevo cron job:
    - **URL**: `https://mnemos-backend-if2n.onrender.com/api/health`
-   - **Schedule**: every 14 minutes (`*/14 * * * *`)
-3. Save
+   - **Schedule**: cada 14 minutos (`*/14 * * * *`)
+3. Guarda
 
-### Health endpoint
+### Endpoint de health
 
 ```
 GET /api/health
 → 200 {"ok": true}
 ```
 
-No authentication required. No database query. Safe to ping at any interval.
+Sin autenticación. Sin consulta a base de datos. Seguro para hacer ping a cualquier intervalo.
 
 ---
 
-## Roadmap
+## Hoja de Ruta
 
-The following features are planned for future releases. Contributions are welcome.
+Las siguientes funcionalidades están planificadas para versiones futuras. Se aceptan contribuciones.
 
-- [ ] Social media scheduling integration (publish directly to Instagram, LinkedIn)
-- [ ] Bulk import from Google Drive and Dropbox
-- [ ] White-label theming — custom logo, colors, and domain per organization
-- [ ] Self-hosted email notifications for consent requests and uploads
-- [ ] Mobile app (React Native) for field teams
+- [ ] Integración de programación en redes sociales (publicar directamente en Instagram, LinkedIn)
+- [ ] Importación masiva desde Google Drive y Dropbox
+- [ ] Personalización de marca — logotipo, colores y dominio propios por organización
+- [ ] Notificaciones por correo alojadas localmente para solicitudes de consentimiento y subidas
+- [ ] Aplicación móvil (React Native) para equipos de campo
 
-Have a feature request? Open an issue and describe your use case.
+¿Tienes una solicitud de funcionalidad? Abre un issue y describe tu caso de uso.
 
 ---
 
-## Contributing
+## Contribuir
 
-Mnemos is open source and welcomes contributions from developers, translators, and organizations willing to test and give feedback.
+Mnemos es de código abierto y da la bienvenida a contribuciones de desarrolladores, traductores y organizaciones dispuestas a probar y dar feedback.
 
-**Reporting issues**
-Use [GitHub Issues](https://github.com/rubenesky/mnemos-backend/issues). Please include: what you expected to happen, what actually happened, and your environment (PHP version, OS, how you installed).
+**Reportar incidencias**
+Usa [GitHub Issues](https://github.com/rubenesky/mnemos-backend/issues). Por favor incluye: qué esperabas que ocurriera, qué ocurrió realmente y tu entorno (versión de PHP, sistema operativo, método de instalación).
 
-**Submitting a pull request**
-1. Fork the repository
-2. Create a branch: `git checkout -b feature/your-feature-name`
-3. Make your changes
-4. Run the test suite: `./vendor/bin/pest`
-5. Open a PR against `main` with a clear description of what changes and why
+**Enviar un pull request**
+1. Haz un fork del repositorio
+2. Crea una rama: `git checkout -b feature/nombre-de-tu-funcionalidad`
+3. Realiza tus cambios
+4. Ejecuta los tests: `./vendor/bin/pest`
+5. Abre un PR contra `main` con una descripción clara de qué cambia y por qué
 
-**Code standards**
-- PSR-12 formatting (enforced by Laravel Pint: `./vendor/bin/pint`)
-- PHPDoc blocks on all public methods
-- New features must include tests
-- Commit messages follow Conventional Commits (`feat:`, `fix:`, `docs:`, etc.)
+**Estándares de código**
+- Formato PSR-12 (aplicado por Laravel Pint: `./vendor/bin/pint`)
+- Bloques PHPDoc en todos los métodos públicos
+- Las nuevas funcionalidades deben incluir tests
+- Los mensajes de commit siguen Conventional Commits (`feat:`, `fix:`, `docs:`, etc.)
 
-**Running the tests:**
+**Ejecutar los tests:**
 
 ```bash
 ./vendor/bin/pest
 ```
 
-The test suite currently covers **278 tests / 749 assertions** across authorization, security, IDOR, asset CRUD, consent tokens, notifications, and AI processing.
+La suite de tests cubre actualmente **281 tests / 755 assertions** en autorización, seguridad, IDOR, CRUD de recursos, tokens de consentimiento, notificaciones y procesamiento IA.
 
 ---
 
-## Sustainability
+## Sostenibilidad
 
-Mnemos is and will remain free and open source under the MIT license. To support ongoing development, the following paid services are available for organizations that want professional assistance:
+Mnemos es y seguirá siendo gratuito y de código abierto bajo la licencia MIT. Para apoyar el desarrollo continuo, los siguientes servicios de pago están disponibles para organizaciones que deseen asistencia profesional:
 
-- **Hosted installation and setup** — we install and configure Mnemos on your server or cloud account
-- **Custom training** — hands-on sessions for your team, in Spanish or English
-- **Dedicated support plans** — priority email support with guaranteed response times
-- **Custom feature development** — specific features built for your organization's workflow
+- **Instalación y configuración alojada** — instalamos y configuramos Mnemos en tu servidor o cuenta en la nube
+- **Formación personalizada** — sesiones prácticas para tu equipo, en español o inglés
+- **Planes de soporte dedicado** — soporte prioritario por correo con tiempos de respuesta garantizados
+- **Desarrollo de funcionalidades a medida** — funcionalidades específicas construidas para el flujo de trabajo de tu organización
 
-For inquiries: [dcrubben25@gmail.com](mailto:dcrubben25@gmail.com)
+Para consultas: [dcrubben25@gmail.com](mailto:dcrubben25@gmail.com)
 
 ---
 
-## License
+## Licencia
 
-Mnemos is released under the [MIT License](LICENSE). You are free to use, modify, and distribute it for any purpose, including commercial use. Attribution is appreciated but not required.
+Mnemos se publica bajo la [Licencia MIT](LICENSE). Eres libre de usarlo, modificarlo y distribuirlo para cualquier propósito, incluido el uso comercial. Se agradece la atribución, pero no es obligatoria.
