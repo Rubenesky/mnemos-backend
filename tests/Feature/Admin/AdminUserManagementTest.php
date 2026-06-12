@@ -169,3 +169,72 @@ test('can deactivate an admin when another active admin exists', function () {
          ->assertOk()
          ->assertJsonPath('is_active', false);
 });
+
+// ── Protected account guards ──────────────────────────────────────────────────
+
+test('cannot delete a protected user', function () {
+    $admin     = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+    $protected = User::factory()->create(['role' => 'admin', 'is_active' => true, 'is_protected' => true]);
+
+    $this->actingAs($admin)
+         ->deleteJson("/api/admin/users/{$protected->id}")
+         ->assertForbidden()
+         ->assertJsonPath('message', 'Esta cuenta está protegida y no puede eliminarse.');
+
+    $this->assertDatabaseHas('users', ['id' => $protected->id]);
+});
+
+test('cannot downgrade role of a protected user via changeRole', function () {
+    $admin     = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+    $protected = User::factory()->create(['role' => 'admin', 'is_active' => true, 'is_protected' => true]);
+
+    $this->actingAs($admin)
+         ->patchJson("/api/admin/users/{$protected->id}/role", ['role' => 'editor'])
+         ->assertForbidden()
+         ->assertJsonPath('message', 'Esta cuenta está protegida y su rol no puede cambiarse.');
+
+    $this->assertDatabaseHas('users', ['id' => $protected->id, 'role' => 'admin']);
+});
+
+test('cannot downgrade role of a protected user via update', function () {
+    $admin     = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+    $protected = User::factory()->create(['role' => 'admin', 'is_active' => true, 'is_protected' => true]);
+
+    $this->actingAs($admin)
+         ->patchJson("/api/admin/users/{$protected->id}", ['role' => 'viewer'])
+         ->assertForbidden()
+         ->assertJsonPath('message', 'Esta cuenta está protegida y su rol no puede cambiarse.');
+
+    $this->assertDatabaseHas('users', ['id' => $protected->id, 'role' => 'admin']);
+});
+
+test('can delete a non-protected admin when another active admin exists', function () {
+    $admin1 = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+    $admin2 = User::factory()->create(['role' => 'admin', 'is_active' => true, 'is_protected' => false]);
+
+    $this->actingAs($admin1)
+         ->deleteJson("/api/admin/users/{$admin2->id}")
+         ->assertStatus(204);
+
+    $this->assertDatabaseMissing('users', ['id' => $admin2->id]);
+});
+
+test('can change role of a non-protected user', function () {
+    $admin  = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+    $target = User::factory()->create(['role' => 'editor', 'is_active' => true, 'is_protected' => false]);
+
+    $this->actingAs($admin)
+         ->patchJson("/api/admin/users/{$target->id}/role", ['role' => 'viewer'])
+         ->assertOk()
+         ->assertJsonPath('role', 'viewer');
+});
+
+test('protected field is included in user list response', function () {
+    $admin     = User::factory()->create(['role' => 'admin']);
+    User::factory()->create(['role' => 'editor', 'is_protected' => true]);
+
+    $this->actingAs($admin)
+         ->getJson('/api/admin/users')
+         ->assertOk()
+         ->assertJsonStructure([['id', 'name', 'email', 'role', 'is_active', 'is_protected', 'assets_count']]);
+});

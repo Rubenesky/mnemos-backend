@@ -39,6 +39,7 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        'is_protected',
         'last_login_at',
     ];
 
@@ -72,6 +73,7 @@ class User extends Authenticatable
         'expires_at'        => 'datetime',
         'last_login_at'     => 'datetime',
         'is_active'         => 'boolean',
+        'is_protected'      => 'boolean',
         'password'          => 'hashed',
     ];
 

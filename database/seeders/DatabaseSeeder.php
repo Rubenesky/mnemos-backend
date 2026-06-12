@@ -20,5 +20,6 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call(OrganizationSettingsSeeder::class);
+        $this->call(DemoUserSeeder::class);
     }
 }

@@ -94,6 +94,10 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user): JsonResponse
     {
+        if ($user->is_protected && $request->has('role') && $request->input('role') !== 'admin') {
+            return response()->json(['message' => 'Esta cuenta está protegida y su rol no puede cambiarse.'], 403);
+        }
+
         $data = $request->validate([
             'name'       => ['sometimes', 'string', 'max:255'],
             'email'      => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
@@ -126,6 +130,10 @@ class UserController extends Controller
     {
         if (auth()->id() === $user->id) {
             return response()->json(['message' => 'You cannot change your own role.'], 403);
+        }
+
+        if ($user->is_protected && ($request->input('role') !== 'admin')) {
+            return response()->json(['message' => 'Esta cuenta está protegida y su rol no puede cambiarse.'], 403);
         }
 
         $data = $request->validate([
@@ -217,6 +225,10 @@ class UserController extends Controller
      */
     public function destroy(User $user): JsonResponse
     {
+        if ($user->is_protected) {
+            return response()->json(['message' => 'Esta cuenta está protegida y no puede eliminarse.'], 403);
+        }
+
         if ($user->assets()->count() > 0) {
             return response()->json(
                 ['message' => 'Cannot delete user with associated assets. Reassign or delete their assets first.'],
@@ -274,6 +286,7 @@ class UserController extends Controller
             'email'         => $user->email,
             'role'          => $user->role,
             'is_active'     => $user->is_active,
+            'is_protected'  => (bool) $user->is_protected,
             'created_at'    => $user->created_at?->toISOString(),
             'last_login_at' => $user->last_login_at?->toISOString(),
             'expires_at'    => $user->expires_at?->toISOString(),
