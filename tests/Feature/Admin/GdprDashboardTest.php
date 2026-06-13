@@ -207,6 +207,79 @@ test('alerts are generated when blocked assets exist', function () {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Alert shape — structured {key, count?} descriptors
+// ─────────────────────────────────────────────────────────────────────────────
+
+test('alert assetsBlocked includes key and count when blocked assets exist', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
+
+    Consent::factory()->create(['asset_id' => $asset->id, 'status' => 'pending']);
+
+    $alerts = $this->actingAs($admin)
+        ->getJson('/api/admin/gdpr/dashboard')
+        ->assertOk()
+        ->json('data.alerts');
+
+    $blocked = collect($alerts)->firstWhere('key', 'assetsBlocked');
+    expect($blocked)->not->toBeNull()
+        ->and($blocked['key'])->toBe('assetsBlocked')
+        ->and($blocked['count'])->toBe(1);
+});
+
+test('alert pendingHigh fires when more than 50 consents are pending', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
+
+    Consent::factory()->count(51)->create(['asset_id' => $asset->id, 'status' => 'pending']);
+
+    $alerts = $this->actingAs($admin)
+        ->getJson('/api/admin/gdpr/dashboard')
+        ->assertOk()
+        ->json('data.alerts');
+
+    $alert = collect($alerts)->firstWhere('key', 'pendingHigh');
+    expect($alert)->not->toBeNull()
+        ->and($alert)->not->toHaveKey('count'); // no count on pendingHigh
+});
+
+test('alert pendingMedium fires with count when 10 to 50 consents are pending', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
+
+    // 29 extra clean assets keep blocked_pct < 5% so only pending triggers medium
+    Asset::factory()->count(29)->create(['user_id' => $admin->id]);
+    Consent::factory()->count(15)->create(['asset_id' => $asset->id, 'status' => 'pending']);
+
+    $alerts = $this->actingAs($admin)
+        ->getJson('/api/admin/gdpr/dashboard')
+        ->assertOk()
+        ->json('data.alerts');
+
+    $alert = collect($alerts)->firstWhere('key', 'pendingMedium');
+    expect($alert)->not->toBeNull()
+        ->and($alert['count'])->toBe(15);
+});
+
+test('alert rejectionRateExceeded fires when rejection rate exceeds 10 percent', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
+
+    // 8 obtained + 2 denied = 20% rejection rate
+    Consent::factory()->count(8)->create(['asset_id' => $asset->id, 'status' => 'obtained']);
+    Consent::factory()->count(2)->create(['asset_id' => $asset->id, 'status' => 'denied']);
+
+    $alerts = $this->actingAs($admin)
+        ->getJson('/api/admin/gdpr/dashboard')
+        ->assertOk()
+        ->json('data.alerts');
+
+    $alert = collect($alerts)->firstWhere('key', 'rejectionRateExceeded');
+    expect($alert)->not->toBeNull()
+        ->and($alert)->not->toHaveKey('count'); // no count on rejectionRateExceeded
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CSV export
 // ─────────────────────────────────────────────────────────────────────────────
 

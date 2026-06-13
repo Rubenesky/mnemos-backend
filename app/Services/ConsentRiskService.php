@@ -97,7 +97,11 @@ class ConsentRiskService
     }
 
     /**
-     * Build a list of human-readable actionable alert messages.
+     * Build a list of structured alert descriptors for frontend translation.
+     *
+     * Each item carries a 'key' (i18n key suffix under admin.gdpr.alerts)
+     * and an optional 'count' for placeholder interpolation. The frontend
+     * translates via t('admin.gdpr.alerts.' + alert.key, { count: alert.count }).
      *
      * Returns an empty array when everything is within safe thresholds.
      *
@@ -105,24 +109,24 @@ class ConsentRiskService
      * @param  int $pending  Number of pending consent records
      * @param  int $rejected Number of denied consent records
      * @param  int $total    Total consent records
-     * @return string[]
+     * @return array<int, array{key: string, count?: int}>
      */
     private function buildAlerts(int $blocked, int $pending, int $rejected, int $total): array
     {
         $alerts = [];
 
         if ($blocked > 0) {
-            $alerts[] = "{$blocked} asset(s) cannot be published due to pending or denied consents.";
+            $alerts[] = ['key' => 'assetsBlocked', 'count' => $blocked];
         }
 
         if ($pending > 50) {
-            $alerts[] = 'More than 50 consents are pending a response.';
+            $alerts[] = ['key' => 'pendingHigh'];
         } elseif ($pending >= 10) {
-            $alerts[] = "{$pending} consents are pending a response.";
+            $alerts[] = ['key' => 'pendingMedium', 'count' => $pending];
         }
 
         if ($total > 0 && ($rejected / $total) > 0.10) {
-            $alerts[] = 'Rejection rate exceeds 10% of total consents.';
+            $alerts[] = ['key' => 'rejectionRateExceeded'];
         }
 
         return $alerts;

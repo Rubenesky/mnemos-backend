@@ -55,7 +55,7 @@ class GdprDashboardController extends Controller
      */
     public function dashboard(): JsonResponse
     {
-        $data = Cache::remember('gdpr.dashboard', 300, fn () => $this->risk->calculateRisk());
+        $data = Cache::remember('gdpr.dashboard.v2', 300, fn () => $this->risk->calculateRisk());
 
         return response()->json(['data' => $data]);
     }
