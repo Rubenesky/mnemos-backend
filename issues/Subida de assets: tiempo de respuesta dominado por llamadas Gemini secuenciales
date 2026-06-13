@@ -1,0 +1,85 @@
+## Subida de assets: tiempo de respuesta dominado por llamadas Gemini secuenciales
+
+### Contexto
+
+Con `QUEUE_CONNECTION=sync`, `ProcessAssetAI::dispatch()` se ejecuta en el 
+mismo proceso PHP antes de devolver el 201 de `POST /api/assets`. El POST 
+tarda en la práctica 6-12s con una imagen, con el botón "Upload" 
+deshabilitado durante todo ese tiempo.
+
+### Datos medidos (logging temporal en AssetApiController + ProcessAssetAI)
+
+Ejemplo real, una imagen:
+[PERF] hash+duplicate_check       {"ms":12}
+[PERF] cloudinary_upload          {"ms":1340}
+[PERF] db_asset_create             {"ms":8}
+[PERF] store() total (sync phase)  {"ms":1365}
+--- ProcessAssetAI::handle() ---
+[PERF] text_extraction             {"ms":0,"extracted":false}
+[PERF] gemini_metadata             {"ms":3200}
+[PERF] db_metadata_write           {"ms":6}
+[PERF] duplicate_detection         {"ms":2100}
+[PERF] gemini_alt_text             {"ms":2800}
+[PERF] ProcessAssetAI total        {"ms":8110}
+
+Las 3 llamadas a Gemini (metadata, duplicate_detection, alt_text) son 
+estrictamente secuenciales: 3200+2100+2800 ≈ 8110. Son independientes 
+entre sí — no hay dependencia de datos que justifique el orden.
+
+El frontend (`AssetUploadView.vue`) ya tiene implementado el patrón 
+correcto para esto — POST + estado "⏳ Analizando…" + polling a 
+`GET /assets/{id}/status` cada 3s — pero con sync el job ya terminó antes 
+de que llegue el 201, así que el polling es decorativo (primera llamada 
+devuelve `processed` de inmediato).
+
+### Opciones evaluadas
+
+**A. Paralelizar las 3 llamadas Gemini dentro de `ProcessAssetAI::handle()`** 
+(`Http::pool()` o equivalente).
+- Reduce la fase async de ~8.1s a ~3.2s (el máximo de las tres).
+- Sigue siendo bloqueante para el usuario (spinner más corto, no 
+  desaparece).
+- Riesgo: manejo de fallos parciales — si una de las tres llamadas falla, 
+  las otras dos deben completarse igual.
+- No cambia contrato de API ni arquitectura. Riesgo contenido.
+
+**B. `ProcessAssetAI::dispatch()` → `dispatch()->afterResponse()`**
+- Cambio de una línea. Sin cambios de infraestructura/queue.
+- 0 tests rotos confirmado (los 3 tests que comprueban `AssetMetadata` en 
+  BD justo después del POST siguen pasando porque `kernel->terminate()` 
+  se invoca dentro de `postJson()` en el ciclo de test).
+- CAMBIA EL CONTRATO: `response.data.metadata` ya no viene poblado en el 
+  201 (el `fresh()` se ejecuta antes de que corra el job). 
+  `AssetUploadView.vue` no lee ese campo (solo `data.id`), pero no se ha 
+  auditado si OTRO punto de subida (PDF, Word, u otro componente) sí lo 
+  hace.
+- PENDIENTE DE VERIFICAR: si Render sirve la app de forma que 
+  `fastcgi_finish_request()` esté disponible (PHP-FPM) o no (`php artisan 
+  serve` / CLI server). Sin eso, el cliente puede no recibir respuesta 
+  antes de que termine el job — beneficio nulo, solo el cambio de 
+  contrato sin la ventaja.
+- Aunque funcione: el worker PHP sigue ocupado ~9s por subida. Si el plan 
+  de Render tiene 1 worker, las subidas siguen "congelando" el resto de 
+  peticiones durante ese tiempo — solo cambia QUIÉN lo nota.
+
+**C. `QUEUE_CONNECTION=database` + worker real**
+- La solución "correcta": POST ~1.5s, polling real, no bloquea otros 
+  requests.
+- Requiere un proceso `queue:work` corriendo — en Render esto implica un 
+  Background Worker (coste adicional, fuera del tier gratuito actual).
+- Es la misma decisión que ya está en el PDF de la propuesta como el 
+  "200-300€/año para producción estable".
+
+### Decisión pendiente
+
+A y B y C no son alternativas independientes — son tres profundidades de 
+la misma decisión (¿cuánto invertimos en que la subida deje de bloquear?). 
+B depende de infraestructura no auditada y cambia un contrato; A es 
+contenido pero de impacto parcial; C es la solución completa pero tiene 
+coste.
+
+### No bloqueante
+
+Esto no afecta a la entrega de Aircury Summer of Code (no aparece en el 
+vídeo, demo funciona correctamente con los tiempos actuales). Revisar 
+después del 30/06.
