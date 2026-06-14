@@ -44,6 +44,7 @@ services:
       - mnemos_network
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   redis:
     image: redis:7-alpine
@@ -54,6 +55,26 @@ services:
     volumes:
       - redis_data:/data
 
+  metabase:
+    image: metabase/metabase:latest
+    container_name: mnemos-metabase
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - mnemos_network
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: mnemos
+      MB_DB_PASS: ""
+      MB_DB_HOST: db
+    volumes:
+      - metabase_data:/metabase-data
+
 networks:
   mnemos_network:
     driver: bridge
@@ -62,4 +83,6 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  metabase_data:
     driver: local
