@@ -1,71 +1,23 @@
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: mnemos-app
-    restart: unless-stopped
-    working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html
-      - ./storage:/var/www/html/storage
-    ports:
-      - "8000:8000"
-    environment:
-      - APP_ENV=production
-      - APP_KEY=${APP_KEY}
-      - APP_URL=${APP_URL:-http://localhost:8000}
-      - DB_HOST=db
-      - DB_DATABASE=${DB_DATABASE:-mnemos}
-      - DB_USERNAME=${DB_USERNAME:-mnemos}
-      - DB_PASSWORD=${DB_PASSWORD:-secret}
-      - CLOUDINARY_URL=${CLOUDINARY_URL}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - QUEUE_CONNECTION=database
-    depends_on:
-      db:
-        condition: service_healthy
-    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
-
   db:
-    image: mysql:8.0
+    image: postgres:16-alpine
     container_name: mnemos-db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-mnemos}
-      MYSQL_USER: ${DB_USERNAME:-mnemos}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+      POSTGRES_DB: mnemos
+      POSTGRES_USER: mnemos
+      POSTGRES_PASSWORD: secret
     ports:
-      - "3306:3306"
+      - "5432:5432"
+    networks:
+      - mnemos_network
     volumes:
-      - mnemos_db_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 5s
-      retries: 10
-      interval: 5s
+      - postgres_data:/var/lib/postgresql/data
 
-  queue:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: mnemos-queue
-    restart: unless-stopped
-    working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html
-    environment:
-      - APP_ENV=production
-      - DB_HOST=db
-      - DB_DATABASE=${DB_DATABASE:-mnemos}
-      - DB_USERNAME=${DB_USERNAME:-mnemos}
-      - DB_PASSWORD=${DB_PASSWORD:-secret}
-      - QUEUE_CONNECTION=database
-    depends_on:
-      - db
-    command: ["php", "artisan", "queue:work", "--tries=3"]
+networks:
+  mnemos_network:
+    driver: bridge
 
 volumes:
-  mnemos_db_data:
+  postgres_data:
     driver: local
