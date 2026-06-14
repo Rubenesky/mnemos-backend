@@ -30,7 +30,7 @@ test('admin can toggle press kit', function () {
     $asset = Asset::factory()->create(['user_id' => $admin->id]);
 
     $response = $this->actingAs($admin)->patchJson("/api/assets/{$asset->id}/press-kit", [
-        'is_press_kit'          => true,
+        'is_press_kit' => true,
         'press_kit_description' => 'Official press photos from the 2024 campaign.',
     ]);
 

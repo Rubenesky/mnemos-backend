@@ -4,22 +4,20 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\ActivityLog;
 
 /**
  * Represents a system user with an assigned role (admin, editor, volunteer, or viewer).
  *
- * @package App\Models
  *
- * @property int                             $id
- * @property string                          $name
- * @property string                          $email
- * @property string                          $role
- * @property bool                            $is_active
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property string $role
+ * @property bool $is_active
  * @property \Illuminate\Support\Carbon|null $last_login_at
  * @property \Illuminate\Support\Carbon|null $expires_at
  * @property \Illuminate\Support\Carbon|null $email_verified_at
@@ -49,7 +47,7 @@ class User extends Authenticatable
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'role'      => 'viewer',
+        'role' => 'viewer',
         'is_active' => true,
     ];
 
@@ -70,11 +68,11 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'expires_at'        => 'datetime',
-        'last_login_at'     => 'datetime',
-        'is_active'         => 'boolean',
-        'is_protected'      => 'boolean',
-        'password'          => 'hashed',
+        'expires_at' => 'datetime',
+        'last_login_at' => 'datetime',
+        'is_active' => 'boolean',
+        'is_protected' => 'boolean',
+        'password' => 'hashed',
     ];
 
     /** Returns all assets owned by this user. */
@@ -110,8 +108,13 @@ class User extends Authenticatable
     /** Returns true if the user has the volunteer role and their account has not expired. */
     public function isVolunteer(): bool
     {
-        if ($this->role !== 'volunteer') return false;
-        if ($this->expires_at !== null && $this->expires_at->isPast()) return false;
+        if ($this->role !== 'volunteer') {
+            return false;
+        }
+        if ($this->expires_at !== null && $this->expires_at->isPast()) {
+            return false;
+        }
+
         return true;
     }
 
@@ -123,8 +126,6 @@ class User extends Authenticatable
 
     /**
      * Returns true if the user account is active (not deactivated by an administrator).
-     *
-     * @return bool
      */
     public function isActive(): bool
     {

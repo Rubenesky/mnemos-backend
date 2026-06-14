@@ -21,13 +21,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  *   GET /api/admin/gdpr/dashboard     — risk summary, KPIs, alerts (cached 5 min)
  *   GET /api/admin/gdpr/audit/export  — full CSV export of all consent records
  *
- * @package App\Http\Controllers\Api\Admin
  * @author  RJC
  */
 class GdprDashboardController extends Controller
 {
     /**
-     * @param ConsentRiskService $risk  Computes consent risk metrics and alerts
+     * @param  ConsentRiskService  $risk  Computes consent risk metrics and alerts
      */
     public function __construct(
         private readonly ConsentRiskService $risk,
@@ -41,17 +40,17 @@ class GdprDashboardController extends Controller
      * on every auto-refresh tick from the frontend.
      *
      * @return JsonResponse 200 {
-     *   data: {
-     *     pending_consents:   int,
-     *     accepted_consents:  int,
-     *     rejected_consents:  int,
-     *     blocked_assets:     int,
-     *     total_assets:       int,
-     *     blocked_percentage: float,
-     *     risk_level:         'low'|'medium'|'high',
-     *     alerts:             string[],
-     *   }
-     * }
+     *                      data: {
+     *                      pending_consents:   int,
+     *                      accepted_consents:  int,
+     *                      rejected_consents:  int,
+     *                      blocked_assets:     int,
+     *                      total_assets:       int,
+     *                      blocked_percentage: float,
+     *                      risk_level:         'low'|'medium'|'high',
+     *                      alerts:             string[],
+     *                      }
+     *                      }
      */
     public function dashboard(): JsonResponse
     {
@@ -70,12 +69,10 @@ class GdprDashboardController extends Controller
      * CSV columns:
      *   asset_title, person_name, person_email, status, consent_type,
      *   created_at, responded_at, token_expires_at
-     *
-     * @return StreamedResponse
      */
     public function exportCsv(): StreamedResponse
     {
-        $filename = 'gdpr_audit_' . now()->format('Y-m-d') . '.csv';
+        $filename = 'gdpr_audit_'.now()->format('Y-m-d').'.csv';
 
         return response()->stream(function () {
             $handle = fopen('php://output', 'w');
@@ -118,7 +115,7 @@ class GdprDashboardController extends Controller
 
             fclose($handle);
         }, 200, [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
     }

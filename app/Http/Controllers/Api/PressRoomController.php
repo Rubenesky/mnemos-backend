@@ -14,7 +14,7 @@ class PressRoomController extends Controller
     use LogsActivity;
 
     /**
-     * @param OrganizationSettingsService $settings  Used to expose org branding in the press room feed
+     * @param  OrganizationSettingsService  $settings  Used to expose org branding in the press room feed
      */
     public function __construct(
         private readonly OrganizationSettingsService $settings,
@@ -30,20 +30,20 @@ class PressRoomController extends Controller
             ->get();
 
         return response()->json([
-            'success'         => true,
-            'org_name'        => $this->settings->get('org_name', 'Mnemos'),
+            'success' => true,
+            'org_name' => $this->settings->get('org_name', 'Mnemos'),
             'org_description' => $this->settings->get('org_description', ''),
-            'data'            => $assets->map(fn($asset) => [
-                'id'                    => $asset->id,
-                'title'                 => $asset->metadata?->title ?? $asset->original_name,
-                'description'           => $asset->metadata?->description,
+            'data' => $assets->map(fn ($asset) => [
+                'id' => $asset->id,
+                'title' => $asset->metadata?->title ?? $asset->original_name,
+                'description' => $asset->metadata?->description,
                 'press_kit_description' => $asset->press_kit_description,
-                'url'                   => $asset->cloudinary_url,
-                'mime_type'             => $asset->mime_type,
-                'size'                  => $asset->size,
-                'alt_text'              => $asset->alt_text ?? $asset->metadata?->alt_text,
-                'tags'                  => $asset->metadata?->tags ?? [],
-                'created_at'            => $asset->created_at?->toISOString(),
+                'url' => $asset->cloudinary_url,
+                'mime_type' => $asset->mime_type,
+                'size' => $asset->size,
+                'alt_text' => $asset->alt_text,
+                'tags' => $asset->metadata?->tags ?? [],
+                'created_at' => $asset->created_at?->toISOString(),
             ]),
         ]);
     }
@@ -54,12 +54,12 @@ class PressRoomController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if (!$user->isAdmin() && (!$user->isEditor() || $asset->user_id !== $user->id)) {
+        if (! $user->isAdmin() && (! $user->isEditor() || $asset->user_id !== $user->id)) {
             return response()->json(['success' => false, 'message' => trans('messages.forbidden')], 403);
         }
 
         $validated = $request->validate([
-            'is_press_kit'          => 'required|boolean',
+            'is_press_kit' => 'required|boolean',
             'press_kit_description' => 'nullable|string|max:1000',
         ]);
 
@@ -67,7 +67,7 @@ class PressRoomController extends Controller
         $this->logActivity('press-kit-toggle', $asset, ['is_press_kit' => $asset->is_press_kit]);
 
         return response()->json([
-            'success'      => true,
+            'success' => true,
             'is_press_kit' => $asset->is_press_kit,
         ]);
     }

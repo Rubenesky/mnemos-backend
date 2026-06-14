@@ -139,7 +139,7 @@ test('risk is high when rejection rate exceeds 10 percent', function () {
 });
 
 test('risk is medium when blocked percentage is between 5 and 20', function () {
-    $admin   = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $blocked = Asset::factory()->create(['user_id' => $admin->id]);
 
     // 1 blocked out of 10 total = 10% → medium via blocked_pct
@@ -161,7 +161,7 @@ test('risk is medium when blocked percentage is between 5 and 20', function () {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test('blocked assets are counted correctly', function () {
-    $admin  = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $asset1 = Asset::factory()->create(['user_id' => $admin->id]);
     $asset2 = Asset::factory()->create(['user_id' => $admin->id]);
     Asset::factory()->create(['user_id' => $admin->id]); // clean — no consents
@@ -173,7 +173,7 @@ test('blocked assets are counted correctly', function () {
         ->getJson('/api/admin/gdpr/dashboard')
         ->assertOk()
         ->assertJsonPath('data.blocked_assets', 2)
-        ->assertJsonPath('data.total_assets',   3);
+        ->assertJsonPath('data.total_assets', 3);
 });
 
 test('consent counts are accurate', function () {
@@ -187,7 +187,7 @@ test('consent counts are accurate', function () {
     $this->actingAs($admin)
         ->getJson('/api/admin/gdpr/dashboard')
         ->assertOk()
-        ->assertJsonPath('data.pending_consents',  3)
+        ->assertJsonPath('data.pending_consents', 3)
         ->assertJsonPath('data.accepted_consents', 5)
         ->assertJsonPath('data.rejected_consents', 1);
 });
@@ -294,7 +294,7 @@ test('csv export returns 200 with csv content type', function () {
 });
 
 test('csv export contains all required column headers', function () {
-    $admin   = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $content = $this->actingAs($admin)
         ->get('/api/admin/gdpr/audit/export')
         ->assertOk()
@@ -314,9 +314,9 @@ test('csv export includes consent data rows', function () {
     $asset = Asset::factory()->create(['user_id' => $admin->id]);
 
     Consent::factory()->create([
-        'asset_id'    => $asset->id,
+        'asset_id' => $asset->id,
         'person_name' => 'Maria García',
-        'status'      => 'pending',
+        'status' => 'pending',
     ]);
 
     $content = $this->actingAs($admin)

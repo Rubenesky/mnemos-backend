@@ -7,12 +7,11 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Generates alternative SEO-optimised titles, descriptions, and tags for an asset using the Gemini API.
- *
- * @package App\Services
  */
 class AIVariantsService
 {
     private string $apiKey;
+
     private string $apiUrl;
 
     public function __construct()
@@ -44,20 +43,21 @@ Respond ONLY with the JSON, no explanations or markdown.";
                 'contents' => [
                     [
                         'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
-                ]
+                            ['text' => $prompt],
+                        ],
+                    ],
+                ],
             ]);
 
             if ($response->failed()) {
                 Log::error('AI Variants error', ['response' => $response->body()]);
+
                 return [];
             }
 
-            $text  = $response->json('candidates.0.content.parts.0.text');
+            $text = $response->json('candidates.0.content.parts.0.text');
             $clean = preg_replace('/```json|```/', '', $text);
-            $data  = json_decode(trim($clean), true);
+            $data = json_decode(trim($clean), true);
 
             Log::info('AI Variants generated', ['data' => $data]);
 
@@ -65,6 +65,7 @@ Respond ONLY with the JSON, no explanations or markdown.";
 
         } catch (\Exception $e) {
             Log::error('AI Variants exception', ['error' => $e->getMessage()]);
+
             return [];
         }
     }

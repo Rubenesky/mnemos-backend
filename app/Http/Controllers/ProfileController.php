@@ -11,8 +11,6 @@ use Illuminate\View\View;
 
 /**
  * Manages authenticated user profile editing and account deletion.
- *
- * @package App\Http\Controllers
  */
 class ProfileController extends Controller
 {

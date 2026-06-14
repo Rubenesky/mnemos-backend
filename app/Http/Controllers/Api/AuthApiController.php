@@ -12,27 +12,25 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * REST API controller for Sanctum token-based authentication (login, logout, admin promotion).
- *
- * @package App\Http\Controllers\Api
  */
 class AuthApiController extends Controller
 {
     public function login(Request $request): JsonResponse
     {
         $request->validate([
-            'email'    => ['required', 'email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             throw ValidationException::withMessages([
                 'email' => ['Your account has been deactivated.'],
             ]);
@@ -46,28 +44,28 @@ class AuthApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'token'   => $token,
-            'user'    => [
-                'id'         => $user->id,
-                'name'       => $user->name,
-                'email'      => $user->email,
-                'role'       => $user->role,
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
                 'expires_at' => $user->expires_at?->toISOString(),
-            ]
+            ],
         ]);
     }
 
     public function register(Request $request): JsonResponse
     {
         $request->validate([
-            'name'                  => ['required', 'string', 'max:255'],
-            'email'                 => ['required', 'email', 'max:255', 'unique:users'],
-            'password'              => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
@@ -75,12 +73,12 @@ class AuthApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'token'   => $token,
-            'user'    => [
-                'id'    => $user->id,
-                'name'  => $user->name,
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
                 'email' => $user->email,
-                'role'  => $user->role,
+                'role' => $user->role,
             ],
         ], 201);
     }
@@ -94,5 +92,4 @@ class AuthApiController extends Controller
             'message' => 'Logged out successfully.',
         ]);
     }
-
 }

@@ -7,12 +7,11 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Parses natural-language search queries into structured filter arrays using the Gemini API.
- *
- * @package App\Services
  */
 class NaturalLanguageSearchService
 {
     private string $apiKey;
+
     private string $apiUrl;
 
     public function __construct()
@@ -24,6 +23,7 @@ class NaturalLanguageSearchService
     private function sanitizeInput(string $input): string
     {
         $clean = preg_replace('/[\x00-\x1F\x7F]/u', ' ', $input);
+
         return mb_substr(trim($clean), 0, 500);
     }
 
@@ -31,13 +31,13 @@ class NaturalLanguageSearchService
     {
         $userQuery = $this->sanitizeInput($userQuery);
 
-        $today      = now()->format('Y-m-d');
-        $weekStart  = now()->startOfWeek()->format('Y-m-d');
+        $today = now()->format('Y-m-d');
+        $weekStart = now()->startOfWeek()->format('Y-m-d');
         $monthStart = now()->startOfMonth()->format('Y-m-d');
-        $yearStart  = now()->startOfYear()->format('Y-m-d');
-        $yesterday  = now()->subDay()->format('Y-m-d');
-        $lastWeek   = now()->subWeek()->format('Y-m-d');
-        $lastMonth  = now()->subMonth()->format('Y-m-d');
+        $yearStart = now()->startOfYear()->format('Y-m-d');
+        $yesterday = now()->subDay()->format('Y-m-d');
+        $lastWeek = now()->subWeek()->format('Y-m-d');
+        $lastMonth = now()->subMonth()->format('Y-m-d');
 
         $systemInstruction = "You are an expert assistant for digital asset search. Convert natural-language searches into structured JSON filters.
 
@@ -62,12 +62,13 @@ RULES: Respond ONLY with valid JSON. Only include filters that clearly apply. Ne
 
             if ($response->failed()) {
                 Log::error('NL Search error', ['response' => $response->body()]);
+
                 return [];
             }
 
-            $text  = $response->json('candidates.0.content.parts.0.text');
+            $text = $response->json('candidates.0.content.parts.0.text');
             $clean = preg_replace('/```json|```/', '', $text);
-            $data  = json_decode(trim($clean), true);
+            $data = json_decode(trim($clean), true);
 
             Log::info('NL Search parsed', ['query' => $userQuery, 'filters' => $data]);
 
@@ -75,6 +76,7 @@ RULES: Respond ONLY with valid JSON. Only include filters that clearly apply. Ne
 
         } catch (\Exception $e) {
             Log::error('NL Search exception', ['error' => $e->getMessage()]);
+
             return [];
         }
     }

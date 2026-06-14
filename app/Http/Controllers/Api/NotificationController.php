@@ -8,8 +8,6 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * Manages internal notifications for the authenticated user.
- *
- * @package App\Http\Controllers\Api
  */
 class NotificationController extends Controller
 {
@@ -27,14 +25,14 @@ class NotificationController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get()
-            ->map(fn(AppNotification $n) => $this->formatNotification($n));
+            ->map(fn (AppNotification $n) => $this->formatNotification($n));
 
         $unreadCount = AppNotification::where('user_id', $user->id)
             ->whereNull('read_at')
             ->count();
 
         return response()->json([
-            'data'         => $notifications,
+            'data' => $notifications,
             'unread_count' => $unreadCount,
         ]);
     }
@@ -78,10 +76,10 @@ class NotificationController extends Controller
     private function formatNotification(AppNotification $notification): array
     {
         return [
-            'id'         => $notification->id,
-            'type'       => $notification->type,
-            'data'       => $notification->data,
-            'read_at'    => $notification->read_at?->toISOString(),
+            'id' => $notification->id,
+            'type' => $notification->type,
+            'data' => $notification->data,
+            'read_at' => $notification->read_at?->toISOString(),
             'created_at' => $notification->created_at->toISOString(),
         ];
     }

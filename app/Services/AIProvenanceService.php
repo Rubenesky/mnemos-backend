@@ -14,7 +14,6 @@ use App\Models\Asset;
  *   - A summary of the prompt and a preview of the response
  *   - Whether a human reviewer has validated the AI output
  *
- * @package App\Services
  * @author  RJC
  */
 class AIProvenanceService
@@ -26,12 +25,11 @@ class AIProvenanceService
      * a given asset, stamps ai_model and ai_generated_at on the asset
      * itself for quick access without joining the generations table.
      *
-     * @param  Asset  $asset           The asset the content was generated for
-     * @param  string $type            Generation type (alt_text|tags|description|report|story)
-     * @param  string $model           AI model identifier (e.g. 'gemini-2.5-flash')
-     * @param  string $promptSummary   Human-readable summary of the prompt sent to the model
-     * @param  string $responsePreview First ≤200 characters of the model's response
-     * @return void
+     * @param  Asset  $asset  The asset the content was generated for
+     * @param  string  $type  Generation type (alt_text|tags|description|report|story)
+     * @param  string  $model  AI model identifier (e.g. 'gemini-2.5-flash')
+     * @param  string  $promptSummary  Human-readable summary of the prompt sent to the model
+     * @param  string  $responsePreview  First ≤200 characters of the model's response
      */
     public function recordGeneration(
         Asset $asset,
@@ -41,19 +39,19 @@ class AIProvenanceService
         string $responsePreview
     ): void {
         AiGeneration::create([
-            'asset_id'         => $asset->id,
-            'generation_type'  => $type,
-            'model'            => $model,
-            'prompt_summary'   => mb_substr($promptSummary, 0, 500),
+            'asset_id' => $asset->id,
+            'generation_type' => $type,
+            'model' => $model,
+            'prompt_summary' => mb_substr($promptSummary, 0, 500),
             'response_preview' => mb_substr($responsePreview, 0, 200),
-            'user_id'          => null, // system-initiated; no interactive user context
+            'user_id' => null, // system-initiated; no interactive user context
         ]);
 
         // Stamp the asset on first generation; subsequent calls update ai_prompt only
         $updates = ['ai_prompt' => mb_substr($promptSummary, 0, 500)];
 
         if (! $asset->ai_generated_at) {
-            $updates['ai_model']        = $model;
+            $updates['ai_model'] = $model;
             $updates['ai_generated_at'] = now();
         }
 
@@ -66,9 +64,8 @@ class AIProvenanceService
      * Records who performed the review and when, enabling downstream
      * systems to filter on human-validated content.
      *
-     * @param  Asset $asset   The asset whose AI content has been reviewed
-     * @param  int   $userId  ID of the user who performed the review
-     * @return void
+     * @param  Asset  $asset  The asset whose AI content has been reviewed
+     * @param  int  $userId  ID of the user who performed the review
      */
     public function markReviewed(Asset $asset, int $userId): void
     {

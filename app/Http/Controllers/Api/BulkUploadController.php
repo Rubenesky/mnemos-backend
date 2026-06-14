@@ -23,7 +23,6 @@ use Illuminate\Support\Str;
  *
  * Accessible to admin and editor roles only.
  *
- * @package App\Http\Controllers\Api
  * @author  RJC
  */
 class BulkUploadController extends Controller
@@ -81,20 +80,19 @@ class BulkUploadController extends Controller
      * Request body:
      *   files[]  — array of UploadedFile objects (1–20 items)
      *
-     * @param  Request  $request
-     * @return JsonResponse  200 {
-     *   results: Array<{
-     *     filename: string,
-     *     status:   'success'|'error',
-     *     asset_id: int|null,
-     *     error:    string|null
-     *   }>
-     * }  |  422 if array validation fails (e.g. > 20 files)
+     * @return JsonResponse 200 {
+     *                      results: Array<{
+     *                      filename: string,
+     *                      status:   'success'|'error',
+     *                      asset_id: int|null,
+     *                      error:    string|null
+     *                      }>
+     *                      }  |  422 if array validation fails (e.g. > 20 files)
      */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'files'   => ['required', 'array', 'min:1', 'max:' . self::MAX_FILES],
+            'files' => ['required', 'array', 'min:1', 'max:'.self::MAX_FILES],
             'files.*' => ['file', 'max:51200'],
         ]);
 
@@ -117,7 +115,6 @@ class BulkUploadController extends Controller
      * All exceptions are caught so that one failing file never prevents the
      * remaining files from being processed.
      *
-     * @param  UploadedFile  $file
      * @return array{filename: string, status: string, asset_id: int|null, error: string|null}
      */
     private function processOne(UploadedFile $file): array
@@ -144,21 +141,21 @@ class BulkUploadController extends Controller
             $cloudinaryResult = app(CloudinaryService::class)->upload($file);
 
             // Store a local copy temporarily, then remove it
-            $storedName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $localPath  = $file->storeAs('assets', $storedName, 'public');
+            $storedName = Str::uuid().'.'.$file->getClientOriginalExtension();
+            $localPath = $file->storeAs('assets', $storedName, 'public');
             Storage::disk('public')->delete($localPath);
 
             $asset = Asset::create([
-                'user_id'              => auth()->id(),
-                'original_name'        => $originalName,
-                'filename'             => $storedName,
-                'mime_type'            => $file->getMimeType(),
-                'size'                 => $file->getSize(),
-                'path'                 => $cloudinaryResult['url'],
-                'file_hash'            => $fileHash,
+                'user_id' => auth()->id(),
+                'original_name' => $originalName,
+                'filename' => $storedName,
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+                'path' => $cloudinaryResult['url'],
+                'file_hash' => $fileHash,
                 'cloudinary_public_id' => $cloudinaryResult['public_id'],
-                'cloudinary_url'       => $cloudinaryResult['url'],
-                'status'               => 'pending',
+                'cloudinary_url' => $cloudinaryResult['url'],
+                'status' => 'pending',
             ]);
 
             ProcessAssetAI::dispatch($asset->id);
@@ -167,30 +164,28 @@ class BulkUploadController extends Controller
 
             return [
                 'filename' => $originalName,
-                'status'   => 'success',
+                'status' => 'success',
                 'asset_id' => $asset->id,
-                'error'    => null,
+                'error' => null,
             ];
 
         } catch (\Throwable $e) {
-            return $this->errorResult($originalName, 'Upload failed: ' . $e->getMessage());
+            return $this->errorResult($originalName, 'Upload failed: '.$e->getMessage());
         }
     }
 
     /**
      * Build a standardised error result for a single file.
      *
-     * @param  string  $filename
-     * @param  string  $error
      * @return array{filename: string, status: string, asset_id: null, error: string}
      */
     private function errorResult(string $filename, string $error): array
     {
         return [
             'filename' => $filename,
-            'status'   => 'error',
+            'status' => 'error',
             'asset_id' => null,
-            'error'    => $error,
+            'error' => $error,
         ];
     }
 }

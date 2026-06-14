@@ -1,4 +1,5 @@
 <?php
+
 // RJC
 use App\Mail\AssetUploadNotificationMail;
 use App\Mail\ConsentRequestMail;
@@ -18,17 +19,17 @@ uses(RefreshDatabase::class);
 it('sends ConsentRequestMail when send-request is called with person_email set', function () {
     Mail::fake();
 
-    $admin   = User::factory()->create(['role' => 'admin']);
-    $asset   = Asset::factory()->create(['user_id' => $admin->id]);
+    $admin = User::factory()->create(['role' => 'admin']);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
     $consent = Consent::factory()->create([
-        'asset_id'     => $asset->id,
+        'asset_id' => $asset->id,
         'person_email' => 'person@example.com',
-        'status'       => 'pending',
+        'status' => 'pending',
     ]);
 
     $this->actingAs($admin, 'sanctum')
-         ->postJson("/api/consents/{$consent->id}/send-request")
-         ->assertOk();
+        ->postJson("/api/consents/{$consent->id}/send-request")
+        ->assertOk();
 
     Mail::assertSent(ConsentRequestMail::class, function ($mail) use ($consent) {
         return $mail->hasTo($consent->person_email)
@@ -42,17 +43,17 @@ it('sends ConsentRequestMail when send-request is called with person_email set',
 it('does not send ConsentRequestMail when person_email is null', function () {
     Mail::fake();
 
-    $admin   = User::factory()->create(['role' => 'admin']);
-    $asset   = Asset::factory()->create(['user_id' => $admin->id]);
+    $admin = User::factory()->create(['role' => 'admin']);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
     $consent = Consent::factory()->create([
-        'asset_id'     => $asset->id,
+        'asset_id' => $asset->id,
         'person_email' => null,
-        'status'       => 'pending',
+        'status' => 'pending',
     ]);
 
     $this->actingAs($admin, 'sanctum')
-         ->postJson("/api/consents/{$consent->id}/send-request")
-         ->assertOk();
+        ->postJson("/api/consents/{$consent->id}/send-request")
+        ->assertOk();
 
     Mail::assertNotSent(ConsentRequestMail::class);
 });
@@ -63,8 +64,8 @@ it('does not send ConsentRequestMail when person_email is null', function () {
 it('sends AssetUploadNotificationMail to all admins when a volunteer uploads', function () {
     Mail::fake();
 
-    $admin1    = User::factory()->create(['role' => 'admin']);
-    $admin2    = User::factory()->create(['role' => 'admin']);
+    $admin1 = User::factory()->create(['role' => 'admin']);
+    $admin2 = User::factory()->create(['role' => 'admin']);
     $volunteer = User::factory()->create(['role' => 'volunteer']);
 
     $file = \Illuminate\Http\UploadedFile::fake()->image('photo.jpg');
@@ -73,14 +74,14 @@ it('sends AssetUploadNotificationMail to all admins when a volunteer uploads', f
     \Illuminate\Support\Facades\Queue::fake();
     $this->mock(\App\Services\CloudinaryService::class, function ($mock) {
         $mock->shouldReceive('upload')->andReturn([
-            'url'        => 'https://res.cloudinary.com/test/image/upload/test.jpg',
-            'public_id'  => 'test_public_id',
+            'url' => 'https://res.cloudinary.com/test/image/upload/test.jpg',
+            'public_id' => 'test_public_id',
         ]);
     });
 
     $this->actingAs($volunteer, 'sanctum')
-         ->postJson('/api/assets', ['file' => $file])
-         ->assertCreated();
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertCreated();
 
     Mail::assertSent(AssetUploadNotificationMail::class, 2); // one per admin
     Mail::assertSent(AssetUploadNotificationMail::class, function ($mail) use ($admin1) {
@@ -97,19 +98,19 @@ it('sends AssetUploadNotificationMail to all admins when a volunteer uploads', f
 it('sends ConsentResponseMail to all admins when consent is responded', function () {
     Mail::fake();
 
-    $admin   = User::factory()->create(['role' => 'admin']);
-    $asset   = Asset::factory()->create(['user_id' => $admin->id]);
+    $admin = User::factory()->create(['role' => 'admin']);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
     $consent = Consent::factory()->create([
         'asset_id' => $asset->id,
-        'status'   => 'pending',
+        'status' => 'pending',
     ]);
 
     // Generate a valid token first
     $service = app(ConsentTokenService::class);
-    $token   = $service->generateToken($consent);
+    $token = $service->generateToken($consent);
 
     $this->postJson("/api/public/consents/{$token}", ['status' => 'obtained'])
-         ->assertOk();
+        ->assertOk();
 
     Mail::assertSent(ConsentResponseMail::class, function ($mail) use ($consent, $admin) {
         return $mail->hasTo($admin->email)

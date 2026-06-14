@@ -171,6 +171,35 @@ GEMINI_API_KEY=your_gemini_api_key
 
 ---
 
+## Docker (desarrollo local)
+
+Este repo incluye un `docker-compose.yml` que levanta una base de datos PostgreSQL local para desarrollo (la base de datos de producción sigue siendo Supabase y no se ve afectada por esto).
+
+**Requisito:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado.
+
+**Levantar la base de datos:**
+
+```bash
+docker compose up -d db
+```
+
+**Parar el contenedor:**
+
+```bash
+docker compose down
+```
+
+**Usar `.env.docker` para desarrollo local:**
+
+`.env.docker` contiene la configuración de conexión apuntando al contenedor (`DB_HOST=db`, `DB_CONNECTION=pgsql`, etc.). Para usarlo en lugar de tu `.env` habitual, cópialo y genera la `APP_KEY`:
+
+```bash
+cp .env.docker .env
+php artisan key:generate
+```
+
+---
+
 ## API Overview
 
 Mnemos exposes a REST API authenticated with Bearer tokens (Laravel Sanctum). All requests require an `Authorization: Bearer <token>` header unless otherwise noted.

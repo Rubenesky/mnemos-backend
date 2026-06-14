@@ -12,33 +12,27 @@ use Illuminate\Support\Facades\Cache;
  *
  * All reads are served from a 1-hour cache keyed by CACHE_KEY.
  * Any write invalidates the cache immediately.
- *
- * @package App\Services
  */
 class OrganizationSettingsService
 {
     private const CACHE_KEY = 'org_settings';
+
     private const CACHE_TTL = 3600; // 1 hour
 
     /**
      * Get a single setting value by key, with optional default.
      *
-     * @param  string $key
      * @param  mixed  $default  Returned when the key does not exist
-     * @return mixed
      */
     public function get(string $key, mixed $default = null): mixed
     {
         $all = $this->getAll();
+
         return $all[$key] ?? $default;
     }
 
     /**
      * Persist a single key/value pair and invalidate the settings cache.
-     *
-     * @param  string $key
-     * @param  string $value
-     * @return void
      */
     public function set(string $key, string $value): void
     {

@@ -2,70 +2,87 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: mnemos-app
     restart: unless-stopped
-    working_dir: /var/www/html
+    depends_on:
+      - db
+      - redis
+    networks:
+      - mnemos_network
     volumes:
       - .:/var/www/html
-      - ./storage:/var/www/html/storage
+    env_file:
+      - .env.docker
+
+  nginx:
+    image: nginx:alpine
+    container_name: mnemos-nginx
+    restart: unless-stopped
     ports:
-      - "8000:8000"
-    environment:
-      - APP_ENV=production
-      - APP_KEY=${APP_KEY}
-      - APP_URL=${APP_URL:-http://localhost:8000}
-      - DB_HOST=db
-      - DB_DATABASE=${DB_DATABASE:-mnemos}
-      - DB_USERNAME=${DB_USERNAME:-mnemos}
-      - DB_PASSWORD=${DB_PASSWORD:-secret}
-      - CLOUDINARY_URL=${CLOUDINARY_URL}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - QUEUE_CONNECTION=database
+      - "8080:80"
     depends_on:
-      db:
-        condition: service_healthy
-    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+      - app
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - mnemos_network
 
   db:
-    image: mysql:8.0
+    image: postgres:16-alpine
     container_name: mnemos-db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-mnemos}
-      MYSQL_USER: ${DB_USERNAME:-mnemos}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+      POSTGRES_DB: mnemos
+      POSTGRES_USER: mnemos
+      POSTGRES_PASSWORD: secret
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
-      - "3306:3306"
+      - "127.0.0.1:5433:5432"
+    networks:
+      - mnemos_network
     volumes:
-      - mnemos_db_data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 5s
-      retries: 10
-      interval: 5s
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  queue:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: mnemos-queue
+  redis:
+    image: redis:7-alpine
+    container_name: mnemos-redis
     restart: unless-stopped
-    working_dir: /var/www/html
+    networks:
+      - mnemos_network
     volumes:
-      - .:/var/www/html
-    environment:
-      - APP_ENV=production
-      - DB_HOST=db
-      - DB_DATABASE=${DB_DATABASE:-mnemos}
-      - DB_USERNAME=${DB_USERNAME:-mnemos}
-      - DB_PASSWORD=${DB_PASSWORD:-secret}
-      - QUEUE_CONNECTION=database
+      - redis_data:/data
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: mnemos-metabase
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
     depends_on:
       - db
-    command: ["php", "artisan", "queue:work", "--tries=3"]
+    networks:
+      - mnemos_network
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: mnemos
+      MB_DB_PASS: ""
+      MB_DB_HOST: db
+    volumes:
+      - metabase_data:/metabase-data
+
+networks:
+  mnemos_network:
+    driver: bridge
 
 volumes:
-  mnemos_db_data:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  metabase_data:
     driver: local

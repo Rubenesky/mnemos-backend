@@ -9,14 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Tracks GDPR consent for an asset on a per-person basis.
  *
- * @package App\Models
  * @property int $id
  * @property int $asset_id
  * @property string $person_name
  * @property string|null $person_email
  * @property \Illuminate\Support\Carbon $consent_date
  * @property string $consent_type
- * @property string $status  obtained|pending|denied
+ * @property string $status obtained|pending|denied
  * @property string|null $document_path
  * @property string|null $notes
  * @property string|null $token
@@ -42,9 +41,9 @@ class Consent extends Model
     ];
 
     protected $casts = [
-        'consent_date'     => 'date',
+        'consent_date' => 'date',
         'token_expires_at' => 'datetime',
-        'responded_at'     => 'datetime',
+        'responded_at' => 'datetime',
     ];
 
     /** Returns the asset this consent record belongs to. */

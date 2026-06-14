@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Storage;
 
 /**
  * Generates AI metadata (title, description, tags) for assets using the Google Gemini Vision API.
- *
- * @package App\Services
  */
 class GeminiService
 {
@@ -17,12 +15,13 @@ class GeminiService
     public const MODEL = 'gemini-2.5-flash';
 
     private string $apiKey;
+
     private string $apiUrl;
 
     public function __construct()
     {
         $this->apiKey = config('services.gemini.key');
-        $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' . self::MODEL . ':generateContent';
+        $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/'.self::MODEL.':generateContent';
     }
 
     public function generateAssetMetadata(string $filename, string $mimeType, ?string $storagePath = null, ?string $cloudinaryUrl = null, ?string $extractedText = null): array
@@ -38,7 +37,7 @@ class GeminiService
         }
 
         // For documents with extracted text, use content-aware analysis
-        if (!empty($extractedText) && mb_strlen($extractedText) > 50) {
+        if (! empty($extractedText) && mb_strlen($extractedText) > 50) {
             return $this->analyzeDocumentContent($filename, $mimeType, $extractedText);
         }
 
@@ -48,15 +47,15 @@ class GeminiService
     /**
      * Generates AI metadata for a document by analysing its extracted text content.
      *
-     * @param string $filename     Original filename (already sanitised)
-     * @param string $mimeType     MIME type of the document
-     * @param string $extractedText Plain-text content extracted from the document (up to 4000 chars)
+     * @param  string  $filename  Original filename (already sanitised)
+     * @param  string  $mimeType  MIME type of the document
+     * @param  string  $extractedText  Plain-text content extracted from the document (up to 4000 chars)
      * @return array{title: string, description: string, tags: list<string>}
      */
     private function analyzeDocumentContent(string $filename, string $mimeType, string $extractedText): array
     {
         $filename = $this->sanitizeFilename($filename);
-        $snippet  = mb_substr($extractedText, 0, 3000);
+        $snippet = mb_substr($extractedText, 0, 3000);
 
         $prompt = "Analiza el siguiente documento con nombre '{$filename}' (tipo: {$mimeType}).
 Contenido del documento:
@@ -71,19 +70,20 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
         try {
             $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
-                'contents' => [['parts' => [['text' => $prompt]]]]
+                'contents' => [['parts' => [['text' => $prompt]]]],
             ]);
 
             if ($response->failed()) {
                 Log::error('Gemini document analysis error', ['status' => $response->status()]);
+
                 return $this->analyzeByFilename($filename, $mimeType);
             }
 
-            $text  = $response->json('candidates.0.content.parts.0.text');
+            $text = $response->json('candidates.0.content.parts.0.text');
             $clean = preg_replace('/```json|```/', '', $text);
-            $data  = json_decode(trim($clean), true);
+            $data = json_decode(trim($clean), true);
 
-            if (!$data || !isset($data['title'])) {
+            if (! $data || ! isset($data['title'])) {
                 return $this->analyzeByFilename($filename, $mimeType);
             }
 
@@ -91,6 +91,7 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
         } catch (\Exception $e) {
             Log::error('Gemini document analysis exception', ['error' => $e->getMessage()]);
+
             return $this->analyzeByFilename($filename, $mimeType);
         }
     }
@@ -99,33 +100,34 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
     {
         try {
             $imageData = Http::get($imageUrl)->body();
-            $base64    = base64_encode($imageData);
+            $base64 = base64_encode($imageData);
 
-            $prompt = "Analiza esta imagen y genera metadatos en formato JSON con exactamente estas claves:
+            $prompt = 'Analiza esta imagen y genera metadatos en formato JSON con exactamente estas claves:
         - title: título descriptivo corto en español (máximo 60 caracteres)
         - description: descripción detallada en español de lo que ves en la imagen (máximo 200 caracteres)
         - tags: array de 5 etiquetas relevantes en español basadas en el contenido visual
-        Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
+        Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.';
 
             $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
                 'contents' => [[
                     'parts' => [
                         ['inline_data' => ['mime_type' => $mimeType, 'data' => $base64]],
-                        ['text' => $prompt]
-                    ]
-                ]]
+                        ['text' => $prompt],
+                    ],
+                ]],
             ]);
 
             if ($response->failed()) {
                 Log::error('Gemini Vision URL error', ['status' => $response->status()]);
+
                 return $this->analyzeByFilename($filename, $mimeType);
             }
 
-            $text  = $response->json('candidates.0.content.parts.0.text');
+            $text = $response->json('candidates.0.content.parts.0.text');
             $clean = preg_replace('/```json|```/', '', $text);
-            $data  = json_decode(trim($clean), true);
+            $data = json_decode(trim($clean), true);
 
-            if (!$data || !isset($data['title'])) {
+            if (! $data || ! isset($data['title'])) {
                 return $this->analyzeByFilename($filename, $mimeType);
             }
 
@@ -133,6 +135,7 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
         } catch (\Exception $e) {
             Log::error('Gemini Vision URL exception', ['error' => $e->getMessage()]);
+
             return $this->analyzeByFilename($filename, $mimeType);
         }
     }
@@ -142,13 +145,13 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
         try {
             // Read the image and convert it to base64
             $imageData = Storage::disk('public')->get($storagePath);
-            $base64    = base64_encode($imageData);
+            $base64 = base64_encode($imageData);
 
-            $prompt = "Analiza esta imagen y genera metadatos en formato JSON con exactamente estas claves:
+            $prompt = 'Analiza esta imagen y genera metadatos en formato JSON con exactamente estas claves:
             - title: título descriptivo corto en español (máximo 60 caracteres)
             - description: descripción detallada en español de lo que ves en la imagen (máximo 200 caracteres)
             - tags: array de 5 etiquetas relevantes en español basadas en el contenido visual
-            Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
+            Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.';
 
             $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
                 'contents' => [
@@ -157,26 +160,27 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
                             [
                                 'inline_data' => [
                                     'mime_type' => $mimeType,
-                                    'data'      => $base64,
-                                ]
+                                    'data' => $base64,
+                                ],
                             ],
-                            ['text' => $prompt]
-                        ]
-                    ]
-                ]
+                            ['text' => $prompt],
+                        ],
+                    ],
+                ],
             ]);
 
             if ($response->failed()) {
                 Log::error('Gemini Vision error', ['status' => $response->status()]);
+
                 return $this->analyzeByFilename($filename, $mimeType);
             }
 
             $text = $response->json('candidates.0.content.parts.0.text');
 
             $clean = preg_replace('/```json|```/', '', $text);
-            $data  = json_decode(trim($clean), true);
+            $data = json_decode(trim($clean), true);
 
-            if (!$data || !isset($data['title'])) {
+            if (! $data || ! isset($data['title'])) {
                 return $this->analyzeByFilename($filename, $mimeType);
             }
 
@@ -184,6 +188,7 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
         } catch (\Exception $e) {
             Log::error('Gemini Vision exception', ['error' => $e->getMessage()]);
+
             return $this->analyzeByFilename($filename, $mimeType);
         }
     }
@@ -192,6 +197,7 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
     {
         // Strip everything except safe printable characters before injecting into prompts
         $safe = preg_replace('/[^\w\s.\-]/u', '', $filename);
+
         return mb_substr(trim($safe), 0, 120);
     }
 
@@ -210,22 +216,23 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
                 'contents' => [
                     [
                         'parts' => [
-                            ['text' => $prompt]
-                        ]
-                    ]
-                ]
+                            ['text' => $prompt],
+                        ],
+                    ],
+                ],
             ]);
 
             if ($response->failed()) {
                 Log::error('Gemini API error', ['status' => $response->status()]);
+
                 return $this->defaultMetadata($filename);
             }
 
-            $text  = $response->json('candidates.0.content.parts.0.text');
+            $text = $response->json('candidates.0.content.parts.0.text');
             $clean = preg_replace('/```json|```/', '', $text);
-            $data  = json_decode(trim($clean), true);
+            $data = json_decode(trim($clean), true);
 
-            if (!$data || !isset($data['title'])) {
+            if (! $data || ! isset($data['title'])) {
                 return $this->defaultMetadata($filename);
             }
 
@@ -233,6 +240,7 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
         } catch (\Exception $e) {
             Log::error('Gemini Service exception', ['error' => $e->getMessage()]);
+
             return $this->defaultMetadata($filename);
         }
     }
@@ -240,39 +248,40 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
     /**
      * Generates an accessibility alt-text description for an image using Gemini Vision.
      *
-     * @param string $imageUrl URL of the image to describe
+     * @param  string  $imageUrl  URL of the image to describe
      * @return string A concise accessibility description (max 125 characters)
      */
     public function generateAltText(string $imageUrl): string
     {
         try {
             $imageData = Http::get($imageUrl)->body();
-            $base64    = base64_encode($imageData);
+            $base64 = base64_encode($imageData);
 
             // Detect mime type from the URL extension; default to jpeg
-            $ext      = strtolower(pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION));
+            $ext = strtolower(pathinfo(parse_url($imageUrl, PHP_URL_PATH), PATHINFO_EXTENSION));
             $mimeType = match ($ext) {
-                'png'  => 'image/png',
-                'gif'  => 'image/gif',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
                 'webp' => 'image/webp',
                 default => 'image/jpeg',
             };
 
             $prompt = 'Escribe una descripción de texto alternativo concisa para esta imagen en español. '
-                    . 'Céntrate en lo que se muestra visualmente. Máximo 125 caracteres. '
-                    . 'Devuelve solo la descripción, sin comillas, sin puntuación al final.';
+                    .'Céntrate en lo que se muestra visualmente. Máximo 125 caracteres. '
+                    .'Devuelve solo la descripción, sin comillas, sin puntuación al final.';
 
             $response = Http::withHeaders(['x-goog-api-key' => $this->apiKey])->post($this->apiUrl, [
                 'contents' => [[
                     'parts' => [
                         ['inline_data' => ['mime_type' => $mimeType, 'data' => $base64]],
                         ['text' => $prompt],
-                    ]
-                ]]
+                    ],
+                ]],
             ]);
 
             if ($response->failed()) {
                 Log::error('Gemini generateAltText error', ['status' => $response->status()]);
+
                 return '';
             }
 
@@ -282,6 +291,7 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
 
         } catch (\Exception $e) {
             Log::error('Gemini generateAltText exception', ['error' => $e->getMessage()]);
+
             return '';
         }
     }
@@ -307,9 +317,9 @@ Responde ÚNICAMENTE con el JSON, sin explicaciones ni formato markdown.";
     private function defaultMetadata(string $filename): array
     {
         return [
-            'title'       => pathinfo($filename, PATHINFO_FILENAME),
+            'title' => pathinfo($filename, PATHINFO_FILENAME),
             'description' => 'No description generated.',
-            'tags'        => [],
+            'tags' => [],
         ];
     }
 }

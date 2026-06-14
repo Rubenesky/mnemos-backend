@@ -20,7 +20,7 @@ class EmergencyKitController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if (!$user->isAdmin() && (!$user->isEditor() || $asset->user_id !== $user->id)) {
+        if (! $user->isAdmin() && (! $user->isEditor() || $asset->user_id !== $user->id)) {
             return response()->json(['success' => false, 'message' => trans('messages.forbidden')], 403);
         }
 
@@ -32,7 +32,7 @@ class EmergencyKitController extends Controller
         $this->logActivity('emergency-kit-toggle', $asset, ['is_emergency_kit' => $asset->is_emergency_kit]);
 
         return response()->json([
-            'success'          => true,
+            'success' => true,
             'is_emergency_kit' => $asset->is_emergency_kit,
         ]);
     }
@@ -43,17 +43,17 @@ class EmergencyKitController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             abort(403, trans('messages.forbidden'));
         }
 
         // Log one audit entry per asset in the kit so each asset's audit trail records this download
         Asset::where('is_emergency_kit', true)->get(['id', 'user_id'])->each(
-            fn($kitAsset) => $this->logActivity('emergency-kit-download', $kitAsset)
+            fn ($kitAsset) => $this->logActivity('emergency-kit-download', $kitAsset)
         );
 
-        $tmpPath  = $service->build();
-        $filename = 'mnemos-emergency-kit-' . now()->format('Y-m-d') . '.zip';
+        $tmpPath = $service->build();
+        $filename = 'mnemos-emergency-kit-'.now()->format('Y-m-d').'.zip';
 
         return response()->streamDownload(function () use ($tmpPath) {
             $stream = fopen($tmpPath, 'rb');
@@ -64,8 +64,8 @@ class EmergencyKitController extends Controller
             fclose($stream);
             @unlink($tmpPath);
         }, $filename, [
-            'Content-Type'        => 'application/zip',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Content-Type' => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
 }

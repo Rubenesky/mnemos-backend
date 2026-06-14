@@ -1,27 +1,27 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\GdprDashboardController;
+use App\Http\Controllers\Api\Admin\OrganizationSettingsController;
+use App\Http\Controllers\Api\Admin\SystemStatusController;
+use App\Http\Controllers\Api\Admin\VolunteerController;
 use App\Http\Controllers\Api\AssetApiController;
+use App\Http\Controllers\Api\AssetAuditController;
+use App\Http\Controllers\Api\AuthApiController;
 use App\Http\Controllers\Api\BulkUploadController;
 use App\Http\Controllers\Api\CollectionController;
+use App\Http\Controllers\Api\ConsentController;
 use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\AssetAuditController;
 use App\Http\Controllers\Api\EmbedController;
 use App\Http\Controllers\Api\EmergencyKitController;
-use App\Http\Controllers\Api\PressRoomController;
-use App\Http\Controllers\Api\AuthApiController;
-use App\Http\Controllers\Api\ConsentController;
+use App\Http\Controllers\Api\ImpactDashboardController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PressRoomController;
+use App\Http\Controllers\Api\ProvenanceController;
 use App\Http\Controllers\Api\PublicConsentController;
 use App\Http\Controllers\Api\PublicGalleryController;
 use App\Http\Controllers\Api\RAGController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SearchApiController;
-use App\Http\Controllers\Api\Admin\GdprDashboardController;
-use App\Http\Controllers\Api\ImpactDashboardController;
-use App\Http\Controllers\Api\ProvenanceController;
-use App\Http\Controllers\Api\Admin\OrganizationSettingsController;
-use App\Http\Controllers\Api\Admin\SystemStatusController;
-use App\Http\Controllers\Api\Admin\VolunteerController;
 use App\Models\Asset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -60,13 +60,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return response()->json([
             'success' => true,
-            'data'    => [
-                'id'         => $request->user()->id,
-                'name'       => $request->user()->name,
-                'email'      => $request->user()->email,
-                'role'       => $request->user()->role,
+            'data' => [
+                'id' => $request->user()->id,
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+                'role' => $request->user()->role,
                 'expires_at' => $request->user()->expires_at?->toISOString(),
-            ]
+            ],
         ]);
     })->middleware('throttle:60,1');
 
@@ -77,12 +77,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/assets/{asset}', [AssetApiController::class, 'show']);
     Route::get('/assets/{asset}/status', function (Asset $asset) {
         $asset->load('metadata');
+
         return response()->json([
-            'status'   => $asset->status,
+            'status' => $asset->status,
             'metadata' => $asset->metadata ? [
-                'title'        => $asset->metadata->title,
-                'description'  => $asset->metadata->description,
-                'tags'         => $asset->metadata->tags,
+                'title' => $asset->metadata->title,
+                'description' => $asset->metadata->description,
+                'tags' => $asset->metadata->tags,
                 'ai_generated' => $asset->metadata->ai_generated,
             ] : null,
         ]);

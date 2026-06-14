@@ -9,9 +9,9 @@ use App\Models\Asset;
 use App\Models\AssetView;
 use App\Models\User;
 use App\Services\AIVariantsService;
+use App\Services\CloudinaryService;
 use App\Services\NotificationService;
 use App\Traits\LogsActivity;
-use App\Services\CloudinaryService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,11 +19,9 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-
 /**
  * REST API controller for managing digital assets including upload, retrieval, update, deletion, and AI variant generation.
  *
- * @package App\Http\Controllers\Api
  * @author  RJC
  */
 class AssetApiController extends Controller
@@ -36,18 +34,15 @@ class AssetApiController extends Controller
      * Non-admin users only receive their own assets (IDOR protection).
      * Accepts optional query parameters: search, type[], consent_status,
      * date_from, date_to, press_kit, emergency_kit, per_page.
-     *
-     * @param  Request $request
-     * @return JsonResponse
      */
     // GET /api/assets
     public function index(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user  = auth()->user();
+        $user = auth()->user();
         $query = Asset::with(['user', 'metadata', 'categories']);
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $query->where('user_id', $user->id);
         }
 
@@ -62,15 +57,15 @@ class AssetApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $assets->getCollection()->map(function ($asset) {
+            'data' => $assets->getCollection()->map(function ($asset) {
                 return $this->formatAsset($asset);
             }),
             'meta' => [
-                'total'        => $assets->total(),
-                'per_page'     => $assets->perPage(),
+                'total' => $assets->total(),
+                'per_page' => $assets->perPage(),
                 'current_page' => $assets->currentPage(),
-                'last_page'    => $assets->lastPage(),
-            ]
+                'last_page' => $assets->lastPage(),
+            ],
         ]);
     }
 
@@ -90,39 +85,40 @@ class AssetApiController extends Controller
         $file = $request->file('file');
 
         // Exact duplicate detection by hash
-        $fileHash      = md5_file($file->getRealPath());
+        $fileHash = md5_file($file->getRealPath());
         $existingAsset = Asset::where('file_hash', $fileHash)->first();
 
         if ($existingAsset) {
             $existingAsset->load(['user', 'metadata', 'categories']);
+
             return response()->json([
-                'success'        => false,
-                'message'        => trans('messages.asset_duplicate'),
+                'success' => false,
+                'message' => trans('messages.asset_duplicate'),
                 'existing_asset' => $this->formatAsset($existingAsset),
             ], 409);
         }
 
         // Upload to Cloudinary
-        $cloudinary       = app(CloudinaryService::class);
+        $cloudinary = app(CloudinaryService::class);
         $cloudinaryResult = $cloudinary->upload($file);
 
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
-        $path     = $file->storeAs('assets', $filename, 'public');
+        $filename = Str::uuid().'.'.$file->getClientOriginalExtension();
+        $path = $file->storeAs('assets', $filename, 'public');
 
         // Remove the local copy — Cloudinary is the source of truth
         Storage::disk('public')->delete($path);
 
         $asset = Asset::create([
-            'user_id'              => auth()->id(),
-            'original_name'        => $file->getClientOriginalName(),
-            'filename'             => $filename,
-            'mime_type'            => $file->getMimeType(),
-            'size'                 => $file->getSize(),
-            'path'                 => $cloudinaryResult['url'],
-            'file_hash'            => $fileHash,
+            'user_id' => auth()->id(),
+            'original_name' => $file->getClientOriginalName(),
+            'filename' => $filename,
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+            'path' => $cloudinaryResult['url'],
+            'file_hash' => $fileHash,
             'cloudinary_public_id' => $cloudinaryResult['public_id'],
-            'cloudinary_url'       => $cloudinaryResult['url'],
-            'status'               => 'pending',
+            'cloudinary_url' => $cloudinaryResult['url'],
+            'status' => 'pending',
         ]);
 
         // Auto-assign to the first public category so it appears in the public gallery
@@ -135,13 +131,13 @@ class AssetApiController extends Controller
 
         if (auth()->user()->role === 'volunteer') {
             app(NotificationService::class)->notifyAdmins('volunteer_upload', [
-                'asset_id'      => $asset->id,
-                'asset_name'    => $asset->original_name,
+                'asset_id' => $asset->id,
+                'asset_name' => $asset->original_name,
                 'uploader_name' => auth()->user()->name,
             ]);
 
-            $reviewUrl = rtrim(config('app.frontend_url', config('app.url')), '/') . '/assets';
-            $uploader  = auth()->user();
+            $reviewUrl = rtrim(config('app.frontend_url', config('app.url')), '/').'/assets';
+            $uploader = auth()->user();
             User::where('role', 'admin')->each(function (User $admin) use ($asset, $uploader, $reviewUrl) {
                 Mail::to($admin->email)
                     ->send(new AssetUploadNotificationMail($asset, $uploader, $reviewUrl));
@@ -152,14 +148,14 @@ class AssetApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->formatAsset($asset->fresh(['user', 'metadata', 'categories'])),
+            'data' => $this->formatAsset($asset->fresh(['user', 'metadata', 'categories'])),
         ], 201);
     }
 
     // GET /api/assets/{id}
     public function show(Asset $asset): JsonResponse
     {
-        if (!$this->canAccess($asset)) {
+        if (! $this->canAccess($asset)) {
             return response()->json(['success' => false, 'message' => trans('messages.forbidden')], 403);
         }
 
@@ -169,14 +165,14 @@ class AssetApiController extends Controller
         try {
             AssetView::create([
                 'asset_id' => $asset->id,
-                'ip_hash'  => hash('sha256', request()->ip() ?? ''),
+                'ip_hash' => hash('sha256', request()->ip() ?? ''),
             ]);
         } catch (\Throwable) {
         }
 
         return response()->json([
             'success' => true,
-            'data'    => $this->formatAsset($asset),
+            'data' => $this->formatAsset($asset),
         ]);
     }
 
@@ -186,7 +182,7 @@ class AssetApiController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        if (!$this->canAccess($asset)) {
+        if (! $this->canAccess($asset)) {
             return response()->json(['success' => false, 'message' => trans('messages.forbidden')], 403);
         }
 
@@ -199,11 +195,11 @@ class AssetApiController extends Controller
         }
 
         $validated = $request->validate([
-            'title'       => ['nullable', 'string', 'max:255'],
+            'title' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
-            'tags'        => ['nullable', 'string', 'max:1000'],
-            'is_public'   => ['sometimes', 'boolean'],
-            'alt_text'    => ['nullable', 'string', 'max:500'],
+            'tags' => ['nullable', 'string', 'max:1000'],
+            'is_public' => ['sometimes', 'boolean'],
+            'alt_text' => ['nullable', 'string', 'max:500'],
         ]);
 
         if (array_key_exists('alt_text', $validated)) {
@@ -215,7 +211,7 @@ class AssetApiController extends Controller
                 if (auth()->user()->role === 'volunteer') {
                     return response()->json([
                         'message' => 'Volunteers cannot publish assets.',
-                        'error'   => 'insufficient_role',
+                        'error' => 'insufficient_role',
                     ], 403);
                 }
 
@@ -225,8 +221,8 @@ class AssetApiController extends Controller
 
                 if ($blockingConsents > 0) {
                     return response()->json([
-                        'message' => 'Cannot publish this asset. It has ' . $blockingConsents . ' unresolved consent record(s).',
-                        'error'   => 'consent_required',
+                        'message' => 'Cannot publish this asset. It has '.$blockingConsents.' unresolved consent record(s).',
+                        'error' => 'consent_required',
                     ], 422);
                 }
             }
@@ -238,9 +234,9 @@ class AssetApiController extends Controller
             $asset->metadata()->updateOrCreate(
                 ['asset_id' => $asset->id],
                 [
-                    'title'        => $request->title,
-                    'description'  => $request->description,
-                    'tags'         => $request->tags ? array_map('trim', explode(',', $request->tags)) : null,
+                    'title' => $request->title,
+                    'description' => $request->description,
+                    'tags' => $request->tags ? array_map('trim', explode(',', $request->tags)) : null,
                     'ai_generated' => false,
                 ]
             );
@@ -250,14 +246,14 @@ class AssetApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->formatAsset($asset->fresh(['user', 'metadata', 'categories'])),
+            'data' => $this->formatAsset($asset->fresh(['user', 'metadata', 'categories'])),
         ]);
     }
 
     // DELETE /api/assets/{id}
     public function destroy(Asset $asset): JsonResponse
     {
-        if (!$this->canAccess($asset)) {
+        if (! $this->canAccess($asset)) {
             return response()->json(['success' => false, 'message' => trans('messages.forbidden')], 403);
         }
 
@@ -281,19 +277,19 @@ class AssetApiController extends Controller
     // POST /api/assets/{id}/variants
     public function variants(Asset $asset): JsonResponse
     {
-        if (!$this->canAccess($asset)) {
+        if (! $this->canAccess($asset)) {
             return response()->json(['success' => false, 'message' => trans('messages.forbidden')], 403);
         }
 
-        if (!$asset->metadata) {
+        if (! $asset->metadata) {
             return response()->json([
                 'success' => false,
                 'message' => 'This asset has no generated metadata yet.',
             ], 422);
         }
 
-        $variantsService = new AIVariantsService();
-        $variants        = $variantsService->generateVariants(
+        $variantsService = new AIVariantsService;
+        $variants = $variantsService->generateVariants(
             $asset->metadata->title ?? '',
             $asset->metadata->description ?? '',
             $asset->metadata->tags ?? []
@@ -307,7 +303,7 @@ class AssetApiController extends Controller
         }
 
         return response()->json([
-            'success'  => true,
+            'success' => true,
             'variants' => $variants,
         ]);
     }
@@ -323,25 +319,21 @@ class AssetApiController extends Controller
      *  - date_to        (date)    assets.created_at <= value
      *  - press_kit      (0|1)     where is_press_kit
      *  - emergency_kit  (0|1)     where is_emergency_kit
-     *
-     * @param  Builder $query
-     * @param  Request $request
-     * @return Builder
      */
     private function applyFilters(Builder $query, Request $request): Builder
     {
         // --- search -----------------------------------------------------------
         if ($search = $request->input('search')) {
             $query->leftJoin('asset_metadata', 'asset_metadata.asset_id', '=', 'assets.id')
-                  ->select('assets.*')
-                  ->groupBy('assets.id')
-                  ->where(function (Builder $q) use ($search) {
-                      $term = '%' . $search . '%';
-                      $q->where('asset_metadata.title', 'LIKE', $term)
+                ->select('assets.*')
+                ->groupBy('assets.id')
+                ->where(function (Builder $q) use ($search) {
+                    $term = '%'.$search.'%';
+                    $q->where('asset_metadata.title', 'LIKE', $term)
                         ->orWhere('asset_metadata.description', 'LIKE', $term)
                         ->orWhere('asset_metadata.tags', 'LIKE', $term)
                         ->orWhere('assets.original_name', 'LIKE', $term);
-                  });
+                });
         }
 
         // --- type[] -----------------------------------------------------------
@@ -353,12 +345,12 @@ class AssetApiController extends Controller
                 'image' => [['LIKE', 'image/%']],
                 'video' => [['LIKE', 'video/%']],
                 'audio' => [['LIKE', 'audio/%']],
-                'pdf'   => [['=',    'application/pdf']],
-                'word'  => [
+                'pdf' => [['=',    'application/pdf']],
+                'word' => [
                     ['=', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
                     ['=', 'application/msword'],
                 ],
-                'text'  => [['LIKE', 'text/%']],
+                'text' => [['LIKE', 'text/%']],
             ];
 
             $validPatterns = [];
@@ -426,6 +418,7 @@ class AssetApiController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
+
         return $user->isAdmin() || $asset->user_id === $user->id;
     }
 
@@ -433,33 +426,33 @@ class AssetApiController extends Controller
     private function formatAsset(Asset $asset): array
     {
         return [
-            'id'            => $asset->id,
+            'id' => $asset->id,
             'original_name' => $asset->original_name,
-            'mime_type'     => $asset->mime_type,
-            'size_kb'       => round($asset->size / 1024, 2),
-            'status'        => $asset->status,
+            'mime_type' => $asset->mime_type,
+            'size_kb' => round($asset->size / 1024, 2),
+            'status' => $asset->status,
             'url' => $asset->cloudinary_url
                     ?: (str_starts_with($asset->path, 'http')
                         ? $asset->path
-                        : asset('storage/' . $asset->path)),
-            'uploaded_by'   => $asset->user->name,
-            'metadata'      => $asset->metadata ? [
-                'title'        => $asset->metadata->title,
-                'description'  => $asset->metadata->description,
-                'tags'         => $asset->metadata->tags,
+                        : asset('storage/'.$asset->path)),
+            'uploaded_by' => $asset->user->name,
+            'metadata' => $asset->metadata ? [
+                'title' => $asset->metadata->title,
+                'description' => $asset->metadata->description,
+                'tags' => $asset->metadata->tags,
                 'ai_generated' => $asset->metadata->ai_generated,
             ] : null,
-            'categories' => $asset->categories->map(fn($c) => [
-                'id'   => $c->id,
+            'categories' => $asset->categories->map(fn ($c) => [
+                'id' => $c->id,
                 'name' => $c->name,
                 'slug' => $c->slug,
             ]),
-            'alt_text'              => $asset->alt_text,
-            'is_public'             => (bool) $asset->is_public,
-            'is_press_kit'          => (bool) $asset->is_press_kit,
+            'alt_text' => $asset->alt_text,
+            'is_public' => (bool) $asset->is_public,
+            'is_press_kit' => (bool) $asset->is_press_kit,
             'press_kit_description' => $asset->press_kit_description,
-            'is_emergency_kit'      => (bool) $asset->is_emergency_kit,
-            'created_at'            => $asset->created_at->toISOString(),
+            'is_emergency_kit' => (bool) $asset->is_emergency_kit,
+            'created_at' => $asset->created_at->toISOString(),
         ];
     }
 }

@@ -19,9 +19,9 @@ it('el per_page por defecto es 12', function () {
     Asset::factory()->count(15)->create(['user_id' => $user->id]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets')
-         ->assertStatus(200)
-         ->assertJsonPath('meta.per_page', 12);
+        ->getJson('/api/assets')
+        ->assertStatus(200)
+        ->assertJsonPath('meta.per_page', 12);
 });
 
 it('per_page=24 se respeta correctamente', function () {
@@ -29,9 +29,9 @@ it('per_page=24 se respeta correctamente', function () {
     Asset::factory()->count(5)->create(['user_id' => $user->id]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?per_page=24')
-         ->assertStatus(200)
-         ->assertJsonPath('meta.per_page', 24);
+        ->getJson('/api/assets?per_page=24')
+        ->assertStatus(200)
+        ->assertJsonPath('meta.per_page', 24);
 });
 
 it('per_page inválido vuelve al valor por defecto de 12', function () {
@@ -39,9 +39,9 @@ it('per_page inválido vuelve al valor por defecto de 12', function () {
     Asset::factory()->count(5)->create(['user_id' => $user->id]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?per_page=99')
-         ->assertStatus(200)
-         ->assertJsonPath('meta.per_page', 12);
+        ->getJson('/api/assets?per_page=99')
+        ->assertStatus(200)
+        ->assertJsonPath('meta.per_page', 12);
 });
 
 // ---------------------------------------------------------------------------
@@ -53,27 +53,27 @@ it('búsqueda por título devuelve sólo el asset coincidente', function () {
 
     $assetA = Asset::factory()->create(['user_id' => $user->id]);
     AssetMetadata::create([
-        'asset_id'     => $assetA->id,
-        'title'        => 'Beautiful photo',
-        'description'  => null,
-        'tags'         => [],
+        'asset_id' => $assetA->id,
+        'title' => 'Beautiful photo',
+        'description' => null,
+        'tags' => [],
         'ai_generated' => false,
     ]);
 
     $assetB = Asset::factory()->create(['user_id' => $user->id]);
     AssetMetadata::create([
-        'asset_id'     => $assetB->id,
-        'title'        => 'Other',
-        'description'  => null,
-        'tags'         => [],
+        'asset_id' => $assetB->id,
+        'title' => 'Other',
+        'description' => null,
+        'tags' => [],
         'ai_generated' => false,
     ]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?search=beautiful')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $assetA->id);
+        ->getJson('/api/assets?search=beautiful')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $assetA->id);
 });
 
 it('búsqueda por tag devuelve el asset que lo contiene', function () {
@@ -81,47 +81,47 @@ it('búsqueda por tag devuelve el asset que lo contiene', function () {
 
     $asset = Asset::factory()->create(['user_id' => $user->id]);
     AssetMetadata::create([
-        'asset_id'     => $asset->id,
-        'title'        => 'Sunset',
-        'description'  => null,
-        'tags'         => ['landscape', 'sunset'],
+        'asset_id' => $asset->id,
+        'title' => 'Sunset',
+        'description' => null,
+        'tags' => ['landscape', 'sunset'],
         'ai_generated' => false,
     ]);
 
     $other = Asset::factory()->create(['user_id' => $user->id]);
     AssetMetadata::create([
-        'asset_id'     => $other->id,
-        'title'        => 'Portrait',
-        'description'  => null,
-        'tags'         => ['people'],
+        'asset_id' => $other->id,
+        'title' => 'Portrait',
+        'description' => null,
+        'tags' => ['people'],
         'ai_generated' => false,
     ]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?search=landscape')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $asset->id);
+        ->getJson('/api/assets?search=landscape')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $asset->id);
 });
 
 it('búsqueda por original_name devuelve el asset correcto', function () {
     $user = User::factory()->create(['role' => 'admin']);
 
     $asset = Asset::factory()->create([
-        'user_id'       => $user->id,
+        'user_id' => $user->id,
         'original_name' => 'vacation_photo.jpg',
     ]);
 
     Asset::factory()->create([
-        'user_id'       => $user->id,
+        'user_id' => $user->id,
         'original_name' => 'work_document.pdf',
     ]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?search=vacation')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $asset->id);
+        ->getJson('/api/assets?search=vacation')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $asset->id);
 });
 
 // ---------------------------------------------------------------------------
@@ -132,38 +132,38 @@ it('type[]=image devuelve sólo assets de tipo imagen', function () {
     $user = User::factory()->create(['role' => 'admin']);
 
     $image = Asset::factory()->create([
-        'user_id'   => $user->id,
+        'user_id' => $user->id,
         'mime_type' => 'image/jpeg',
     ]);
     Asset::factory()->create([
-        'user_id'   => $user->id,
+        'user_id' => $user->id,
         'mime_type' => 'application/pdf',
     ]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?type[]=image')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $image->id);
+        ->getJson('/api/assets?type[]=image')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $image->id);
 });
 
 it('type[]=pdf devuelve sólo assets PDF', function () {
     $user = User::factory()->create(['role' => 'admin']);
 
     $pdf = Asset::factory()->create([
-        'user_id'   => $user->id,
+        'user_id' => $user->id,
         'mime_type' => 'application/pdf',
     ]);
     Asset::factory()->create([
-        'user_id'   => $user->id,
+        'user_id' => $user->id,
         'mime_type' => 'image/png',
     ]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?type[]=pdf')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $pdf->id);
+        ->getJson('/api/assets?type[]=pdf')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $pdf->id);
 });
 
 it('type[]=image y type[]=video devuelven tanto imágenes como vídeos', function () {
@@ -174,9 +174,9 @@ it('type[]=image y type[]=video devuelven tanto imágenes como vídeos', functio
     Asset::factory()->create(['user_id' => $user->id, 'mime_type' => 'application/pdf']);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?type[]=image&type[]=video')
-         ->assertStatus(200)
-         ->assertJsonCount(2, 'data');
+        ->getJson('/api/assets?type[]=image&type[]=video')
+        ->assertStatus(200)
+        ->assertJsonCount(2, 'data');
 });
 
 // ---------------------------------------------------------------------------
@@ -193,10 +193,10 @@ it('consent_status=pending devuelve assets con al menos un consentimiento pendie
     Consent::factory()->create(['asset_id' => $assetObtained->id, 'status' => 'obtained']);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?consent_status=pending')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $assetPending->id);
+        ->getJson('/api/assets?consent_status=pending')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $assetPending->id);
 });
 
 it('consent_status=none devuelve assets sin ningún registro de consentimiento', function () {
@@ -208,10 +208,10 @@ it('consent_status=none devuelve assets sin ningún registro de consentimiento',
     Consent::factory()->create(['asset_id' => $assetWithConsent->id, 'status' => 'pending']);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?consent_status=none')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $assetNoConsent->id);
+        ->getJson('/api/assets?consent_status=none')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $assetNoConsent->id);
 });
 
 it('consent_status=obtained devuelve assets con al menos un consentimiento obtenido', function () {
@@ -224,10 +224,10 @@ it('consent_status=obtained devuelve assets con al menos un consentimiento obten
     Consent::factory()->create(['asset_id' => $assetPending->id, 'status' => 'pending']);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?consent_status=obtained')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $assetObtained->id);
+        ->getJson('/api/assets?consent_status=obtained')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $assetObtained->id);
 });
 
 // ---------------------------------------------------------------------------
@@ -241,10 +241,10 @@ it('date_from excluye assets más antiguos', function () {
     $new = Asset::factory()->create(['user_id' => $user->id, 'created_at' => '2024-06-01 10:00:00']);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?date_from=2024-05-01')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $new->id);
+        ->getJson('/api/assets?date_from=2024-05-01')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $new->id);
 });
 
 it('date_to excluye assets más recientes', function () {
@@ -254,10 +254,10 @@ it('date_to excluye assets más recientes', function () {
     $new = Asset::factory()->create(['user_id' => $user->id, 'created_at' => '2024-06-01 10:00:00']);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?date_to=2024-03-01')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $old->id);
+        ->getJson('/api/assets?date_to=2024-03-01')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $old->id);
 });
 
 // ---------------------------------------------------------------------------
@@ -271,10 +271,10 @@ it('press_kit=1 devuelve sólo assets del press kit', function () {
     Asset::factory()->create(['user_id' => $user->id, 'is_press_kit' => false]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?press_kit=1')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $kitAsset->id);
+        ->getJson('/api/assets?press_kit=1')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $kitAsset->id);
 });
 
 it('emergency_kit=1 devuelve sólo assets del kit de emergencia', function () {
@@ -284,10 +284,10 @@ it('emergency_kit=1 devuelve sólo assets del kit de emergencia', function () {
     Asset::factory()->create(['user_id' => $user->id, 'is_emergency_kit' => false]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?emergency_kit=1')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $emergencyAsset->id);
+        ->getJson('/api/assets?emergency_kit=1')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $emergencyAsset->id);
 });
 
 // ---------------------------------------------------------------------------
@@ -300,20 +300,20 @@ it('la combinación de search y type funciona correctamente', function () {
     // Image with matching title — should be returned
     $target = Asset::factory()->create(['user_id' => $user->id, 'mime_type' => 'image/jpeg']);
     AssetMetadata::create([
-        'asset_id'     => $target->id,
-        'title'        => 'Sunset landscape',
-        'description'  => null,
-        'tags'         => [],
+        'asset_id' => $target->id,
+        'title' => 'Sunset landscape',
+        'description' => null,
+        'tags' => [],
         'ai_generated' => false,
     ]);
 
     // PDF with matching title — excluded by type filter
     $pdf = Asset::factory()->create(['user_id' => $user->id, 'mime_type' => 'application/pdf']);
     AssetMetadata::create([
-        'asset_id'     => $pdf->id,
-        'title'        => 'Sunset landscape document',
-        'description'  => null,
-        'tags'         => [],
+        'asset_id' => $pdf->id,
+        'title' => 'Sunset landscape document',
+        'description' => null,
+        'tags' => [],
         'ai_generated' => false,
     ]);
 
@@ -321,10 +321,10 @@ it('la combinación de search y type funciona correctamente', function () {
     Asset::factory()->create(['user_id' => $user->id, 'mime_type' => 'image/png']);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets?search=sunset&type[]=image')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $target->id);
+        ->getJson('/api/assets?search=sunset&type[]=image')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $target->id);
 });
 
 // ---------------------------------------------------------------------------
@@ -332,36 +332,36 @@ it('la combinación de search y type funciona correctamente', function () {
 // ---------------------------------------------------------------------------
 
 it('IDOR: el editor no ve assets de otro usuario aunque use el filtro de búsqueda', function () {
-    $admin  = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $editor = User::factory()->create(['role' => 'editor']);
 
     $adminAsset = Asset::factory()->create(['user_id' => $admin->id]);
     AssetMetadata::create([
-        'asset_id'     => $adminAsset->id,
-        'title'        => 'Secret document',
-        'description'  => null,
-        'tags'         => [],
+        'asset_id' => $adminAsset->id,
+        'title' => 'Secret document',
+        'description' => null,
+        'tags' => [],
         'ai_generated' => false,
     ]);
 
     $editorAsset = Asset::factory()->create(['user_id' => $editor->id]);
     AssetMetadata::create([
-        'asset_id'     => $editorAsset->id,
-        'title'        => 'Editor secret document',
-        'description'  => null,
-        'tags'         => [],
+        'asset_id' => $editorAsset->id,
+        'title' => 'Editor secret document',
+        'description' => null,
+        'tags' => [],
         'ai_generated' => false,
     ]);
 
     $this->actingAs($editor, 'sanctum')
-         ->getJson('/api/assets?search=secret')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $editorAsset->id);
+        ->getJson('/api/assets?search=secret')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $editorAsset->id);
 });
 
 it('IDOR: el admin ve todos los assets que coinciden con el filtro de tipo', function () {
-    $admin  = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $editor = User::factory()->create(['role' => 'editor']);
 
     Asset::factory()->create(['user_id' => $admin->id,  'mime_type' => 'image/jpeg']);
@@ -369,13 +369,13 @@ it('IDOR: el admin ve todos los assets que coinciden con el filtro de tipo', fun
     Asset::factory()->create(['user_id' => $editor->id, 'mime_type' => 'application/pdf']);
 
     $this->actingAs($admin, 'sanctum')
-         ->getJson('/api/assets?type[]=image')
-         ->assertStatus(200)
-         ->assertJsonCount(2, 'data');
+        ->getJson('/api/assets?type[]=image')
+        ->assertStatus(200)
+        ->assertJsonCount(2, 'data');
 });
 
 it('IDOR: el editor sólo ve sus propios assets que coinciden con el filtro de tipo', function () {
-    $admin  = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $editor = User::factory()->create(['role' => 'editor']);
 
     Asset::factory()->create(['user_id' => $admin->id,  'mime_type' => 'image/jpeg']);
@@ -383,8 +383,8 @@ it('IDOR: el editor sólo ve sus propios assets que coinciden con el filtro de t
     Asset::factory()->create(['user_id' => $editor->id, 'mime_type' => 'application/pdf']);
 
     $this->actingAs($editor, 'sanctum')
-         ->getJson('/api/assets?type[]=image')
-         ->assertStatus(200)
-         ->assertJsonCount(1, 'data')
-         ->assertJsonPath('data.0.id', $editorImage->id);
+        ->getJson('/api/assets?type[]=image')
+        ->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $editorImage->id);
 });

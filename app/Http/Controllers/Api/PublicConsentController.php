@@ -17,17 +17,17 @@ class PublicConsentController extends Controller
     {
         $consent = $service->findByToken($token);
 
-        if (!$consent) {
+        if (! $consent) {
             return response()->json(['message' => 'Token no válido o expirado.'], 404);
         }
 
         return response()->json([
             'data' => [
-                'person_name'  => $consent->person_name,
+                'person_name' => $consent->person_name,
                 'consent_type' => $consent->consent_type,
-                'asset_title'  => $consent->asset->metadata?->title ?? $consent->asset->original_name,
+                'asset_title' => $consent->asset->metadata?->title ?? $consent->asset->original_name,
                 'consent_date' => $consent->consent_date->toDateString(),
-                'expires_at'   => $consent->token_expires_at->toISOString(),
+                'expires_at' => $consent->token_expires_at->toISOString(),
             ],
         ]);
     }
@@ -37,19 +37,19 @@ class PublicConsentController extends Controller
     {
         $consent = $service->findByToken($token);
 
-        if (!$consent) {
+        if (! $consent) {
             return response()->json(['message' => 'Token no válido o expirado.'], 404);
         }
 
         $request->validate([
             'status' => 'required|in:obtained,denied',
-            'notes'  => 'nullable|string|max:500',
+            'notes' => 'nullable|string|max:500',
         ]);
 
         $service->respond($consent, $request->status, $request->notes);
 
         // Notify all admins of the consent decision via email
-        $gdprPanelUrl = rtrim(config('app.frontend_url', config('app.url')), '/') . '/consents';
+        $gdprPanelUrl = rtrim(config('app.frontend_url', config('app.url')), '/').'/consents';
         $consent->loadMissing('asset.metadata');
         User::where('role', 'admin')->each(function (User $admin) use ($consent, $request, $gdprPanelUrl) {
             Mail::to($admin->email)

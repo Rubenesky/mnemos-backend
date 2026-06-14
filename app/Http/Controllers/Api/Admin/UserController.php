@@ -15,8 +15,6 @@ use Illuminate\Validation\Rule;
  * Handles listing, creating, updating, role changes, activation/deactivation,
  * and deletion of user accounts. All routes are protected by the `admin`
  * middleware, so every method can assume the authenticated user is an admin.
- *
- * @package App\Http\Controllers\Api\Admin
  */
 class UserController extends Controller
 {
@@ -25,7 +23,7 @@ class UserController extends Controller
      *
      * GET /api/admin/users
      *
-     * @return JsonResponse  200 — array of user objects
+     * @return JsonResponse 200 — array of user objects
      */
     public function index(): JsonResponse
     {
@@ -50,25 +48,24 @@ class UserController extends Controller
      *  - role:       required, one of: admin, editor, volunteer, viewer
      *  - expires_at: required when role is volunteer; nullable date after today
      *
-     * @param  Request  $request
-     * @return JsonResponse  201 — created user object
+     * @return JsonResponse 201 — created user object
      */
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'name'       => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'unique:users,email'],
-            'password'   => ['required', 'string', 'min:8'],
-            'role'       => ['required', Rule::in(['admin', 'editor', 'volunteer', 'viewer'])],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', Rule::in(['admin', 'editor', 'volunteer', 'viewer'])],
             'expires_at' => ['required_if:role,volunteer', 'nullable', 'date', 'after:today'],
         ]);
 
         $user = User::create([
-            'name'       => $data['name'],
-            'email'      => $data['email'],
-            'password'   => Hash::make($data['password']),
-            'role'       => $data['role'],
-            'is_active'  => true,
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'role' => $data['role'],
+            'is_active' => true,
             'expires_at' => $data['expires_at'] ?? null,
         ]);
 
@@ -88,9 +85,7 @@ class UserController extends Controller
      *  - role:       one of: admin, editor, volunteer, viewer
      *  - expires_at: required when role changes to volunteer; nullable date
      *
-     * @param  Request  $request
-     * @param  User     $user
-     * @return JsonResponse  200 — updated user object
+     * @return JsonResponse 200 — updated user object
      */
     public function update(Request $request, User $user): JsonResponse
     {
@@ -99,9 +94,9 @@ class UserController extends Controller
         }
 
         $data = $request->validate([
-            'name'       => ['sometimes', 'string', 'max:255'],
-            'email'      => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'role'       => ['sometimes', Rule::in(['admin', 'editor', 'volunteer', 'viewer'])],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'role' => ['sometimes', Rule::in(['admin', 'editor', 'volunteer', 'viewer'])],
             'expires_at' => ['required_if:role,volunteer', 'nullable', 'date'],
         ]);
 
@@ -122,9 +117,7 @@ class UserController extends Controller
      *  - role:       required, one of: admin, editor, volunteer, viewer
      *  - expires_at: required when role is volunteer; nullable date after today
      *
-     * @param  Request  $request
-     * @param  User     $user
-     * @return JsonResponse  200 — updated user object | 403 — self-change guard
+     * @return JsonResponse 200 — updated user object | 403 — self-change guard
      */
     public function changeRole(Request $request, User $user): JsonResponse
     {
@@ -137,7 +130,7 @@ class UserController extends Controller
         }
 
         $data = $request->validate([
-            'role'       => ['required', Rule::in(['admin', 'editor', 'volunteer', 'viewer'])],
+            'role' => ['required', Rule::in(['admin', 'editor', 'volunteer', 'viewer'])],
             'expires_at' => ['required_if:role,volunteer', 'nullable', 'date', 'after:today'],
         ]);
 
@@ -160,8 +153,7 @@ class UserController extends Controller
      *
      * An admin cannot deactivate their own account (returns 403).
      *
-     * @param  User  $user
-     * @return JsonResponse  200 — updated user object | 403 — self-deactivation guard
+     * @return JsonResponse 200 — updated user object | 403 — self-deactivation guard
      */
     public function deactivate(User $user): JsonResponse
     {
@@ -175,7 +167,7 @@ class UserController extends Controller
                 ->where('id', '!=', $user->id)
                 ->exists();
 
-            if (!$otherActiveAdmins) {
+            if (! $otherActiveAdmins) {
                 return response()->json(
                     ['message' => 'Cannot deactivate the last active admin.'],
                     409
@@ -199,8 +191,7 @@ class UserController extends Controller
      *
      * PATCH /api/admin/users/{user}/activate
      *
-     * @param  User  $user
-     * @return JsonResponse  200 — updated user object
+     * @return JsonResponse 200 — updated user object
      */
     public function activate(User $user): JsonResponse
     {
@@ -220,8 +211,7 @@ class UserController extends Controller
      * Deletion is blocked when the user still owns assets (returns 409).
      * The caller must reassign or delete those assets first.
      *
-     * @param  User  $user
-     * @return JsonResponse  204 — no content | 409 — user has assets
+     * @return JsonResponse 204 — no content | 409 — user has assets
      */
     public function destroy(User $user): JsonResponse
     {
@@ -242,7 +232,7 @@ class UserController extends Controller
                 ->where('id', '!=', $user->id)
                 ->exists();
 
-            if (!$otherActiveAdmins) {
+            if (! $otherActiveAdmins) {
                 return response()->json(
                     ['message' => 'Cannot delete the last active admin.'],
                     409
@@ -265,7 +255,6 @@ class UserController extends Controller
      * The `assets_count` attribute is populated either by a prior `withCount`
      * / `loadCount` call or falls back to a live query when absent.
      *
-     * @param  User  $user
      * @return array{
      *     id: int,
      *     name: string,
@@ -281,16 +270,16 @@ class UserController extends Controller
     private function userResponse(User $user): array
     {
         return [
-            'id'            => $user->id,
-            'name'          => $user->name,
-            'email'         => $user->email,
-            'role'          => $user->role,
-            'is_active'     => $user->is_active,
-            'is_protected'  => (bool) $user->is_protected,
-            'created_at'    => $user->created_at?->toISOString(),
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'is_active' => $user->is_active,
+            'is_protected' => (bool) $user->is_protected,
+            'created_at' => $user->created_at?->toISOString(),
             'last_login_at' => $user->last_login_at?->toISOString(),
-            'expires_at'    => $user->expires_at?->toISOString(),
-            'assets_count'  => $user->assets_count ?? $user->assets()->count(),
+            'expires_at' => $user->expires_at?->toISOString(),
+            'assets_count' => $user->assets_count ?? $user->assets()->count(),
         ];
     }
 }

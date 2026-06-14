@@ -23,7 +23,7 @@ it('editor cannot list consents belonging to another user\'s asset', function ()
 
 it('editor can list their own consents', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
     Consent::factory()->count(2)->create(['asset_id' => $asset->id]);
 
     $response = $this->actingAs($editor, 'sanctum')
@@ -37,7 +37,7 @@ it('editor cannot view a consent belonging to another user\'s asset', function (
     $editorA = User::factory()->create(['role' => 'editor']);
     $editorB = User::factory()->create(['role' => 'editor']);
 
-    $asset   = Asset::factory()->create(['user_id' => $editorA->id]);
+    $asset = Asset::factory()->create(['user_id' => $editorA->id]);
     $consent = Consent::factory()->create(['asset_id' => $asset->id]);
 
     $this->actingAs($editorB, 'sanctum')
@@ -46,8 +46,8 @@ it('editor cannot view a consent belonging to another user\'s asset', function (
 });
 
 it('editor can view their own consent', function () {
-    $editor  = User::factory()->create(['role' => 'editor']);
-    $asset   = Asset::factory()->create(['user_id' => $editor->id]);
+    $editor = User::factory()->create(['role' => 'editor']);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
     $consent = Consent::factory()->create(['asset_id' => $asset->id]);
 
     $this->actingAs($editor, 'sanctum')
@@ -59,7 +59,7 @@ it('editor cannot update a consent belonging to another user\'s asset', function
     $editorA = User::factory()->create(['role' => 'editor']);
     $editorB = User::factory()->create(['role' => 'editor']);
 
-    $asset   = Asset::factory()->create(['user_id' => $editorA->id]);
+    $asset = Asset::factory()->create(['user_id' => $editorA->id]);
     $consent = Consent::factory()->create(['asset_id' => $asset->id]);
 
     $this->actingAs($editorB, 'sanctum')
@@ -68,7 +68,7 @@ it('editor cannot update a consent belonging to another user\'s asset', function
 });
 
 it('admin can list all consents regardless of asset owner', function () {
-    $admin   = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $editorA = User::factory()->create(['role' => 'editor']);
     $editorB = User::factory()->create(['role' => 'editor']);
 
@@ -85,9 +85,9 @@ it('admin can list all consents regardless of asset owner', function () {
 });
 
 it('admin can view any consent', function () {
-    $admin   = User::factory()->create(['role' => 'admin']);
-    $editor  = User::factory()->create(['role' => 'editor']);
-    $asset   = Asset::factory()->create(['user_id' => $editor->id]);
+    $admin = User::factory()->create(['role' => 'admin']);
+    $editor = User::factory()->create(['role' => 'editor']);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
     $consent = Consent::factory()->create(['asset_id' => $asset->id]);
 
     $this->actingAs($admin, 'sanctum')
@@ -96,9 +96,9 @@ it('admin can view any consent', function () {
 });
 
 it('admin can update any consent', function () {
-    $admin   = User::factory()->create(['role' => 'admin']);
-    $editor  = User::factory()->create(['role' => 'editor']);
-    $asset   = Asset::factory()->create(['user_id' => $editor->id]);
+    $admin = User::factory()->create(['role' => 'admin']);
+    $editor = User::factory()->create(['role' => 'editor']);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
     $consent = Consent::factory()->create(['asset_id' => $asset->id, 'status' => 'pending']);
 
     $response = $this->actingAs($admin, 'sanctum')

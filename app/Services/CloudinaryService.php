@@ -8,8 +8,6 @@ use Illuminate\Http\UploadedFile;
 
 /**
  * Wraps the Cloudinary SDK to upload and delete media assets in the configured cloud storage folder.
- *
- * @package App\Services
  */
 class CloudinaryService
 {
@@ -18,21 +16,21 @@ class CloudinaryService
     public function __construct()
     {
         $cloudName = env('CLOUDINARY_CLOUD_NAME', config('cloudinary.cloud_name'));
-        $apiKey    = env('CLOUDINARY_API_KEY', config('cloudinary.api_key'));
+        $apiKey = env('CLOUDINARY_API_KEY', config('cloudinary.api_key'));
         $apiSecret = env('CLOUDINARY_API_SECRET', config('cloudinary.api_secret'));
 
         Configuration::instance([
             'cloud' => [
                 'cloud_name' => $cloudName,
-                'api_key'    => $apiKey,
+                'api_key' => $apiKey,
                 'api_secret' => $apiSecret,
             ],
             'url' => [
-                'secure' => true
-            ]
+                'secure' => true,
+            ],
         ]);
 
-        $this->cloudinary = new Cloudinary();
+        $this->cloudinary = new Cloudinary;
     }
 
     public function upload(UploadedFile $file): array
@@ -40,17 +38,17 @@ class CloudinaryService
         $result = $this->cloudinary->uploadApi()->upload(
             $file->getRealPath(),
             [
-                'folder'         => 'mnemos',
-                'resource_type'  => 'auto',
-                'use_filename'   => false,
-                'unique_filename'=> true,
+                'folder' => 'mnemos',
+                'resource_type' => 'auto',
+                'use_filename' => false,
+                'unique_filename' => true,
             ]
         );
 
         return [
             'public_id' => $result['public_id'],
-            'url'       => $result['secure_url'],
-            'format'    => $result['format'],
+            'url' => $result['secure_url'],
+            'format' => $result['format'],
         ];
     }
 
@@ -68,6 +66,7 @@ class CloudinaryService
     {
         try {
             $result = $this->cloudinary->adminApi()->ping();
+
             return ($result['status'] ?? '') === 'ok';
         } catch (\Exception) {
             return false;

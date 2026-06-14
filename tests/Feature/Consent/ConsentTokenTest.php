@@ -10,8 +10,8 @@ uses(RefreshDatabase::class);
 // ── send-request ────────────────────────────────────────────────────────
 
 it('admin puede generar un token de solicitud', function () {
-    $admin   = User::factory()->create(['role' => 'admin']);
-    $asset   = Asset::factory()->create(['user_id' => $admin->id]);
+    $admin = User::factory()->create(['role' => 'admin']);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
     $consent = Consent::factory()->create(['asset_id' => $asset->id, 'status' => 'pending']);
 
     $response = $this->actingAs($admin, 'sanctum')
@@ -25,8 +25,8 @@ it('admin puede generar un token de solicitud', function () {
 });
 
 it('viewer no puede generar token de solicitud', function () {
-    $viewer  = User::factory()->create(['role' => 'viewer']);
-    $asset   = Asset::factory()->create();
+    $viewer = User::factory()->create(['role' => 'viewer']);
+    $asset = Asset::factory()->create();
     $consent = Consent::factory()->create(['asset_id' => $asset->id]);
 
     $this->actingAs($viewer, 'sanctum')
@@ -37,13 +37,13 @@ it('viewer no puede generar token de solicitud', function () {
 // ── public show ─────────────────────────────────────────────────────────
 
 it('devuelve los datos del consentimiento con token válido', function () {
-    $asset   = Asset::factory()->create();
+    $asset = Asset::factory()->create();
     $consent = Consent::factory()->create([
-        'asset_id'         => $asset->id,
-        'status'           => 'pending',
-        'token'            => 'valid-token-abc123',
+        'asset_id' => $asset->id,
+        'status' => 'pending',
+        'token' => 'valid-token-abc123',
         'token_expires_at' => now()->addDays(7),
-        'responded_at'     => null,
+        'responded_at' => null,
     ]);
 
     $this->getJson('/api/public/consents/valid-token-abc123')
@@ -57,12 +57,12 @@ it('devuelve 404 con token inexistente', function () {
 });
 
 it('devuelve 404 con token expirado', function () {
-    $asset   = Asset::factory()->create();
+    $asset = Asset::factory()->create();
     Consent::factory()->create([
-        'asset_id'         => $asset->id,
-        'token'            => 'expired-token',
+        'asset_id' => $asset->id,
+        'token' => 'expired-token',
         'token_expires_at' => now()->subDay(),
-        'responded_at'     => null,
+        'responded_at' => null,
     ]);
 
     $this->getJson('/api/public/consents/expired-token')
@@ -70,12 +70,12 @@ it('devuelve 404 con token expirado', function () {
 });
 
 it('devuelve 404 con token ya respondido', function () {
-    $asset   = Asset::factory()->create();
+    $asset = Asset::factory()->create();
     Consent::factory()->create([
-        'asset_id'         => $asset->id,
-        'token'            => 'answered-token',
+        'asset_id' => $asset->id,
+        'token' => 'answered-token',
         'token_expires_at' => now()->addDays(7),
-        'responded_at'     => now()->subHour(),
+        'responded_at' => now()->subHour(),
     ]);
 
     $this->getJson('/api/public/consents/answered-token')
@@ -85,13 +85,13 @@ it('devuelve 404 con token ya respondido', function () {
 // ── public respond ──────────────────────────────────────────────────────
 
 it('persona puede aceptar el consentimiento via token', function () {
-    $asset   = Asset::factory()->create();
+    $asset = Asset::factory()->create();
     $consent = Consent::factory()->create([
-        'asset_id'         => $asset->id,
-        'status'           => 'pending',
-        'token'            => 'accept-token',
+        'asset_id' => $asset->id,
+        'status' => 'pending',
+        'token' => 'accept-token',
         'token_expires_at' => now()->addDays(7),
-        'responded_at'     => null,
+        'responded_at' => null,
     ]);
 
     $this->postJson('/api/public/consents/accept-token', ['status' => 'obtained'])
@@ -104,13 +104,13 @@ it('persona puede aceptar el consentimiento via token', function () {
 });
 
 it('persona puede rechazar el consentimiento via token', function () {
-    $asset   = Asset::factory()->create();
+    $asset = Asset::factory()->create();
     $consent = Consent::factory()->create([
-        'asset_id'         => $asset->id,
-        'status'           => 'pending',
-        'token'            => 'deny-token',
+        'asset_id' => $asset->id,
+        'status' => 'pending',
+        'token' => 'deny-token',
         'token_expires_at' => now()->addDays(7),
-        'responded_at'     => null,
+        'responded_at' => null,
     ]);
 
     $this->postJson('/api/public/consents/deny-token', ['status' => 'denied'])
@@ -121,12 +121,12 @@ it('persona puede rechazar el consentimiento via token', function () {
 });
 
 it('no se puede responder con status inválido', function () {
-    $asset   = Asset::factory()->create();
+    $asset = Asset::factory()->create();
     Consent::factory()->create([
-        'asset_id'         => $asset->id,
-        'token'            => 'invalid-status-token',
+        'asset_id' => $asset->id,
+        'token' => 'invalid-status-token',
         'token_expires_at' => now()->addDays(7),
-        'responded_at'     => null,
+        'responded_at' => null,
     ]);
 
     $this->postJson('/api/public/consents/invalid-status-token', ['status' => 'pending'])

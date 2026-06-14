@@ -9,8 +9,6 @@ use Illuminate\Http\Request;
 
 /**
  * REST API controller that exposes the RAG (Retrieval-Augmented Generation) question-answering endpoint.
- *
- * @package App\Http\Controllers\Api
  */
 class RAGController extends Controller
 {
@@ -20,13 +18,13 @@ class RAGController extends Controller
             'question' => ['required', 'string', 'max:500'],
         ]);
 
-        $rag      = new RAGService();
-        $answer   = $rag->query($request->input('question'));
+        $rag = new RAGService;
+        $answer = $rag->query($request->input('question'));
 
         return response()->json([
-            'success'  => true,
+            'success' => true,
             'question' => $request->input('question'),
-            'answer'   => $answer,
+            'answer' => $answer,
         ]);
     }
 }

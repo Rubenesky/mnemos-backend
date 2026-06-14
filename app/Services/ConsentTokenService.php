@@ -19,9 +19,9 @@ class ConsentTokenService
         $token = Str::random(64);
 
         $consent->update([
-            'token'            => $token,
+            'token' => $token,
             'token_expires_at' => now()->addDays(7),
-            'responded_at'     => null,
+            'responded_at' => null,
         ]);
 
         return $token;
@@ -52,16 +52,16 @@ class ConsentTokenService
         }
 
         $consent->update([
-            'status'       => $status,
+            'status' => $status,
             'responded_at' => now(),
-            'notes'        => $notes ?? $consent->notes,
+            'notes' => $notes ?? $consent->notes,
         ]);
 
         $this->notifications->notifyAdmins('consent_responded', [
-            'consent_id'  => $consent->id,
+            'consent_id' => $consent->id,
             'person_name' => $consent->person_name,
-            'status'      => $status,
-            'asset_id'    => $consent->asset_id,
+            'status' => $status,
+            'asset_id' => $consent->asset_id,
         ]);
     }
 }

@@ -19,15 +19,15 @@ beforeEach(function () {
     $this->mock(CloudinaryService::class, function ($mock) {
         $mock->shouldReceive('upload')->andReturn([
             'public_id' => 'test/fake-pdf-id',
-            'url'       => 'https://res.cloudinary.com/test/raw/upload/fake.pdf',
+            'url' => 'https://res.cloudinary.com/test/raw/upload/fake.pdf',
         ]);
     });
 
     $this->mock(GeminiService::class, function ($mock) {
         $mock->shouldReceive('generateAssetMetadata')->andReturn([
-            'title'       => 'Documento de prueba',
+            'title' => 'Documento de prueba',
             'description' => 'Contenido del PDF de prueba',
-            'tags'        => ['documento', 'prueba'],
+            'tags' => ['documento', 'prueba'],
         ]);
         $mock->shouldReceive('generateAltText')->andReturn('');
     });
@@ -47,9 +47,9 @@ it('sube un PDF válido y devuelve 201', function () {
     $file = UploadedFile::fake()->create('informe.pdf', 500, 'application/pdf');
 
     $this->actingAs($user, 'sanctum')
-         ->postJson('/api/assets', ['file' => $file])
-         ->assertStatus(201)
-         ->assertJsonStructure(['data' => ['id', 'url', 'status']]);
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertStatus(201)
+        ->assertJsonStructure(['data' => ['id', 'url', 'status']]);
 });
 
 it('el asset PDF tiene metadatos generados por IA', function () {
@@ -57,8 +57,8 @@ it('el asset PDF tiene metadatos generados por IA', function () {
     $file = UploadedFile::fake()->create('informe.pdf', 500, 'application/pdf');
 
     $response = $this->actingAs($user, 'sanctum')
-                     ->postJson('/api/assets', ['file' => $file])
-                     ->assertStatus(201);
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertStatus(201);
 
     $assetId = $response->json('data.id');
     expect(AssetMetadata::where('asset_id', $assetId)->exists())->toBeTrue();
@@ -69,8 +69,8 @@ it('rechaza un archivo disfrazado de PDF con 422', function () {
     $file = UploadedFile::fake()->create('fake.pdf', 100, 'application/octet-stream');
 
     $this->actingAs($user, 'sanctum')
-         ->postJson('/api/assets', ['file' => $file])
-         ->assertStatus(422);
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertStatus(422);
 });
 
 it('guarda el mime_type correcto para PDF', function () {
@@ -78,10 +78,10 @@ it('guarda el mime_type correcto para PDF', function () {
     $file = UploadedFile::fake()->create('contrato.pdf', 200, 'application/pdf');
 
     $response = $this->actingAs($user, 'sanctum')
-                     ->postJson('/api/assets', ['file' => $file])
-                     ->assertStatus(201);
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertStatus(201);
 
     $assetId = $response->json('data.id');
-    $asset   = Asset::find($assetId);
+    $asset = Asset::find($assetId);
     expect($asset->mime_type)->toBe('application/pdf');
 });

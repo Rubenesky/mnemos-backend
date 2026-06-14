@@ -8,8 +8,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Sets the application locale based on the Accept-Language header or a query parameter.
- *
- * @package App\Http\Middleware
  */
 class SetLocale
 {
@@ -31,6 +29,7 @@ class SetLocale
         }
 
         app()->setLocale($locale);
+
         return $next($request);
     }
 }

@@ -1,0 +1,44 @@
+name: CI
+on:
+  push:
+    branches: [feature/devops-track, main]
+  pull_request:
+    branches: [main]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pdo_sqlite, sqlite3, mbstring, zip, bcmath, redis
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Generate key
+        run: php artisan key:generate
+
+      - name: Run Pint (code style)
+        run: ./vendor/bin/pint --test
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse --memory-limit=256M
+
+      # Tests use sqlite :memory: as configured in phpunit.xml — matches local
+      # dev. PgSQL-specific SQL dialect divergence is validated at deploy time
+      # against Supabase/Render, not in CI.
+      - name: Run tests
+        run: ./vendor/bin/pest

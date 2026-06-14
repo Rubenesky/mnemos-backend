@@ -7,8 +7,6 @@ use App\Models\User;
 
 /**
  * Creates internal notification records for users.
- *
- * @package App\Services
  */
 class NotificationService
 {
@@ -19,8 +17,8 @@ class NotificationService
     {
         AppNotification::create([
             'user_id' => $recipient->id,
-            'type'    => $type,
-            'data'    => $data,
+            'type' => $type,
+            'data' => $data,
             'read_at' => null,
         ]);
     }

@@ -1,5 +1,7 @@
 <?php
+
 // RJC
+
 namespace App\Mail;
 
 use App\Models\Asset;
@@ -13,28 +15,26 @@ use Illuminate\Queue\SerializesModels;
 /**
  * Notifies all admin users when a volunteer uploads a new asset.
  * Contains uploader name, asset name, thumbnail (if image), and a link to the review panel.
- *
- * @package App\Mail
  */
 class AssetUploadNotificationMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
-     * @param Asset  $asset       The newly uploaded asset.
-     * @param User   $uploader    The volunteer who uploaded it.
-     * @param string $reviewUrl   URL to the admin assets panel.
+     * @param  Asset  $asset  The newly uploaded asset.
+     * @param  User  $uploader  The volunteer who uploaded it.
+     * @param  string  $reviewUrl  URL to the admin assets panel.
      */
     public function __construct(
-        public readonly Asset  $asset,
-        public readonly User   $uploader,
+        public readonly Asset $asset,
+        public readonly User $uploader,
         public readonly string $reviewUrl,
     ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New asset uploaded — ' . $this->asset->original_name,
+            subject: 'New asset uploaded — '.$this->asset->original_name,
         );
     }
 

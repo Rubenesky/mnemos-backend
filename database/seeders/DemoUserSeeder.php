@@ -18,10 +18,10 @@ class DemoUserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'demo@mnemos.app'],
             [
-                'name'         => 'Demo Aircury',
-                'password'     => Hash::make('Demo1234!'),
-                'role'         => 'admin',
-                'is_active'    => true,
+                'name' => 'Demo Aircury',
+                'password' => Hash::make('Demo1234!'),
+                'role' => 'admin',
+                'is_active' => true,
                 'is_protected' => false,
             ]
         );
