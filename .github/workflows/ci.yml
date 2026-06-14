@@ -60,4 +60,5 @@ jobs:
           DB_DATABASE: mnemos_test
           DB_USERNAME: mnemos
           DB_PASSWORD: secret
+          DB_SSLMODE: disable
         run: php artisan test --env=testing
