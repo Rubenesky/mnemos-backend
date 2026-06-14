@@ -14,6 +14,15 @@ uses(RefreshDatabase::class);
 /**
  * Feature tests for OrganizationSettingsService and the admin settings endpoints.
  */
+
+// Controller constructor injects CloudinaryService, so Laravel resolves it on
+// every route in this file — even ones that never touch the SDK. The real
+// constructor calls Cloudinary\Configuration::validate() and throws when
+// CLOUDINARY_* env vars are missing. A default mock keeps non-upload tests
+// from blowing up; tests that exercise upload override it with their own.
+beforeEach(function () {
+    $this->mock(CloudinaryService::class);
+});
 test('get and set work correctly', function () {
     $service = app(OrganizationSettingsService::class);
     $service->set('org_name', 'Test Org');
