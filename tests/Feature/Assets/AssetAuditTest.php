@@ -15,63 +15,63 @@ it('admin can view the audit trail of any asset', function () {
     $asset = Asset::factory()->create(['user_id' => $owner->id]);
 
     ActivityLog::create([
-        'user_id'     => $owner->id,
-        'action'      => 'upload',
+        'user_id' => $owner->id,
+        'action' => 'upload',
         'entity_type' => 'Asset',
-        'entity_id'   => $asset->id,
-        'metadata'    => ['filename' => 'photo.jpg'],
-        'ip_hash'     => hash('sha256', '127.0.0.1'),
+        'entity_id' => $asset->id,
+        'metadata' => ['filename' => 'photo.jpg'],
+        'ip_hash' => hash('sha256', '127.0.0.1'),
     ]);
 
     $this->actingAs($admin, 'sanctum')
-         ->getJson("/api/assets/{$asset->id}/audit")
-         ->assertOk()
-         ->assertJsonStructure(['data' => [['event', 'user', 'timestamp', 'detail']]]);
+        ->getJson("/api/assets/{$asset->id}/audit")
+        ->assertOk()
+        ->assertJsonStructure(['data' => [['event', 'user', 'timestamp', 'detail']]]);
 });
 
 it('editor can view the audit trail of their own asset', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
 
     ActivityLog::create([
-        'user_id'     => $editor->id,
-        'action'      => 'upload',
+        'user_id' => $editor->id,
+        'action' => 'upload',
         'entity_type' => 'Asset',
-        'entity_id'   => $asset->id,
-        'metadata'    => ['filename' => 'doc.pdf'],
-        'ip_hash'     => hash('sha256', '127.0.0.1'),
+        'entity_id' => $asset->id,
+        'metadata' => ['filename' => 'doc.pdf'],
+        'ip_hash' => hash('sha256', '127.0.0.1'),
     ]);
 
     $this->actingAs($editor, 'sanctum')
-         ->getJson("/api/assets/{$asset->id}/audit")
-         ->assertOk()
-         ->assertJsonCount(1, 'data');
+        ->getJson("/api/assets/{$asset->id}/audit")
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
 });
 
 it('editor cannot view the audit trail of another users asset', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $other  = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $other->id]);
+    $other = User::factory()->create(['role' => 'editor']);
+    $asset = Asset::factory()->create(['user_id' => $other->id]);
 
     $this->actingAs($editor, 'sanctum')
-         ->getJson("/api/assets/{$asset->id}/audit")
-         ->assertForbidden();
+        ->getJson("/api/assets/{$asset->id}/audit")
+        ->assertForbidden();
 });
 
 it('viewer cannot view any audit trail', function () {
     $viewer = User::factory()->create(['role' => 'viewer']);
-    $asset  = Asset::factory()->create();
+    $asset = Asset::factory()->create();
 
     $this->actingAs($viewer, 'sanctum')
-         ->getJson("/api/assets/{$asset->id}/audit")
-         ->assertForbidden();
+        ->getJson("/api/assets/{$asset->id}/audit")
+        ->assertForbidden();
 });
 
 it('unauthenticated request is rejected', function () {
     $asset = Asset::factory()->create();
 
     $this->getJson("/api/assets/{$asset->id}/audit")
-         ->assertUnauthorized();
+        ->assertUnauthorized();
 });
 
 // ── Response structure ──────────────────────────────────────────────────────
@@ -81,29 +81,29 @@ it('returns entries in chronological order', function () {
     $asset = Asset::factory()->create();
 
     ActivityLog::create([
-        'user_id'     => $admin->id,
-        'action'      => 'upload',
+        'user_id' => $admin->id,
+        'action' => 'upload',
         'entity_type' => 'Asset',
-        'entity_id'   => $asset->id,
-        'metadata'    => ['filename' => 'file.jpg'],
-        'ip_hash'     => hash('sha256', '127.0.0.1'),
-        'created_at'  => now()->subHours(2),
+        'entity_id' => $asset->id,
+        'metadata' => ['filename' => 'file.jpg'],
+        'ip_hash' => hash('sha256', '127.0.0.1'),
+        'created_at' => now()->subHours(2),
     ]);
 
     ActivityLog::create([
-        'user_id'     => $admin->id,
-        'action'      => 'edit',
+        'user_id' => $admin->id,
+        'action' => 'edit',
         'entity_type' => 'Asset',
-        'entity_id'   => $asset->id,
-        'metadata'    => null,
-        'ip_hash'     => hash('sha256', '127.0.0.1'),
-        'created_at'  => now()->subHour(),
+        'entity_id' => $asset->id,
+        'metadata' => null,
+        'ip_hash' => hash('sha256', '127.0.0.1'),
+        'created_at' => now()->subHour(),
     ]);
 
     $data = $this->actingAs($admin, 'sanctum')
-                 ->getJson("/api/assets/{$asset->id}/audit")
-                 ->assertOk()
-                 ->json('data');
+        ->getJson("/api/assets/{$asset->id}/audit")
+        ->assertOk()
+        ->json('data');
 
     expect($data[0]['event'])->toBe('upload');
     expect($data[1]['event'])->toBe('edit');
@@ -114,18 +114,18 @@ it('resolves upload detail from metadata filename', function () {
     $asset = Asset::factory()->create();
 
     ActivityLog::create([
-        'user_id'     => $admin->id,
-        'action'      => 'upload',
+        'user_id' => $admin->id,
+        'action' => 'upload',
         'entity_type' => 'Asset',
-        'entity_id'   => $asset->id,
-        'metadata'    => ['filename' => 'report.pdf'],
-        'ip_hash'     => hash('sha256', '127.0.0.1'),
+        'entity_id' => $asset->id,
+        'metadata' => ['filename' => 'report.pdf'],
+        'ip_hash' => hash('sha256', '127.0.0.1'),
     ]);
 
     $data = $this->actingAs($admin, 'sanctum')
-                 ->getJson("/api/assets/{$asset->id}/audit")
-                 ->assertOk()
-                 ->json('data');
+        ->getJson("/api/assets/{$asset->id}/audit")
+        ->assertOk()
+        ->json('data');
 
     expect($data[0]['detail'])->toBe('report.pdf');
 });
@@ -135,7 +135,7 @@ it('returns empty data array when asset has no activity', function () {
     $asset = Asset::factory()->create();
 
     $this->actingAs($admin, 'sanctum')
-         ->getJson("/api/assets/{$asset->id}/audit")
-         ->assertOk()
-         ->assertJson(['data' => []]);
+        ->getJson("/api/assets/{$asset->id}/audit")
+        ->assertOk()
+        ->assertJson(['data' => []]);
 });

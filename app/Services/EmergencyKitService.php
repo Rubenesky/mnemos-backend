@@ -18,15 +18,15 @@ class EmergencyKitService
      */
     public function build(): string
     {
-        $assets  = Asset::where('is_emergency_kit', true)
-                        ->with('metadata')
-                        ->take(50)
-                        ->get();
+        $assets = Asset::where('is_emergency_kit', true)
+            ->with('metadata')
+            ->take(50)
+            ->get();
 
-        $tmpPath   = sys_get_temp_dir() . '/mnemos-kit-' . Str::uuid() . '.zip';
+        $tmpPath = sys_get_temp_dir().'/mnemos-kit-'.Str::uuid().'.zip';
         $tmpAssets = [];
 
-        $zip    = new ZipArchive();
+        $zip = new ZipArchive;
         $result = $zip->open($tmpPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         if ($result !== true) {
             throw new \RuntimeException("Failed to create emergency kit ZIP (ZipArchive error: {$result})");
@@ -38,15 +38,15 @@ class EmergencyKitService
 
                 if ($url) {
                     try {
-                        $tmpAsset    = tempnam(sys_get_temp_dir(), 'mnemos_asset_');
+                        $tmpAsset = tempnam(sys_get_temp_dir(), 'mnemos_asset_');
                         $tmpAssets[] = $tmpAsset;
 
                         // Stream response directly to disk — avoids loading the full body into PHP memory
                         $response = Http::timeout(30)->sink($tmpAsset)->get($url);
                         if ($response->successful()) {
-                            $ext      = pathinfo($asset->original_name, PATHINFO_EXTENSION);
+                            $ext = pathinfo($asset->original_name, PATHINFO_EXTENSION);
                             $safeName = $asset->metadata?->title
-                                ? Str::slug($asset->metadata->title) . '.' . $ext
+                                ? Str::slug($asset->metadata->title).'.'.$ext
                                 : $asset->original_name;
                             $zip->addFile($tmpAsset, $safeName);
                         }
@@ -60,12 +60,12 @@ class EmergencyKitService
             $manifest = "id,filename,title,url,mime_type\n";
             foreach ($assets as $asset) {
                 $manifest .= implode(',', [
-                    '"' . str_replace('"', '""', (string) $asset->id) . '"',
-                    '"' . str_replace('"', '""', $asset->original_name) . '"',
-                    '"' . str_replace('"', '""', $asset->metadata?->title ?? '') . '"',
-                    '"' . str_replace('"', '""', $asset->cloudinary_url ?? '') . '"',
-                    '"' . str_replace('"', '""', $asset->mime_type) . '"',
-                ]) . "\n";
+                    '"'.str_replace('"', '""', (string) $asset->id).'"',
+                    '"'.str_replace('"', '""', $asset->original_name).'"',
+                    '"'.str_replace('"', '""', $asset->metadata?->title ?? '').'"',
+                    '"'.str_replace('"', '""', $asset->cloudinary_url ?? '').'"',
+                    '"'.str_replace('"', '""', $asset->mime_type).'"',
+                ])."\n";
             }
             $zip->addFromString('manifest.csv', $manifest);
 

@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * Named AppNotification to avoid collision with Laravel's built-in Notification facade.
  *
- * @package App\Models
  * @property int $id
  * @property int $user_id
  * @property string $type
@@ -34,7 +33,7 @@ class AppNotification extends Model
     ];
 
     protected $casts = [
-        'data'    => 'array',
+        'data' => 'array',
         'read_at' => 'datetime',
     ];
 

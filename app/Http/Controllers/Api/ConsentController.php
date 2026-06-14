@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ConsentRequestMail;
 use App\Models\Asset;
 use App\Models\Consent;
 use App\Services\ConsentTokenService;
 use App\Traits\LogsActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use App\Mail\ConsentRequestMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -18,12 +17,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /**
  * Manages GDPR consent records for digital assets.
  * Admin and editor roles may read and manage consents.
- *
- * @package App\Http\Controllers\Api
  */
 class ConsentController extends Controller
 {
     use LogsActivity;
+
     /**
      * Restrict all consent operations to admin and editor roles.
      */
@@ -31,9 +29,10 @@ class ConsentController extends Controller
     {
         $this->middleware(function ($request, $next) {
             $role = auth()->user()?->role;
-            if (!in_array($role, ['admin', 'editor'])) {
+            if (! in_array($role, ['admin', 'editor'])) {
                 return response()->json(['message' => 'Unauthorized. Admin or editor role required.'], 403);
             }
+
             return $next($request);
         });
     }
@@ -44,13 +43,13 @@ class ConsentController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Consent::with([
-                'asset:id,original_name,cloudinary_url,mime_type',
-                'asset.metadata:asset_id,title',
-            ])
+            'asset:id,original_name,cloudinary_url,mime_type',
+            'asset.metadata:asset_id,title',
+        ])
             ->latest();
 
-        if (!auth()->user()->isAdmin()) {
-            $query->whereHas('asset', fn($q) => $q->where('user_id', auth()->id()));
+        if (! auth()->user()->isAdmin()) {
+            $query->whereHas('asset', fn ($q) => $q->where('user_id', auth()->id()));
         }
 
         if ($request->has('asset_id')) {
@@ -70,14 +69,14 @@ class ConsentController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'asset_id'     => 'required|exists:assets,id',
-            'person_name'  => 'required|string|max:255',
+            'asset_id' => 'required|exists:assets,id',
+            'person_name' => 'required|string|max:255',
             'person_email' => 'nullable|email|max:255',
             'consent_date' => 'required|date',
             'consent_type' => 'required|in:photo,video,audio,general',
-            'status'       => 'required|in:obtained,pending,denied',
-            'notes'        => 'nullable|string|max:1000',
-            'document'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'status' => 'required|in:obtained,pending,denied',
+            'notes' => 'nullable|string|max:1000',
+            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         // Only admin can manage any asset; editors can only manage their own assets
@@ -97,9 +96,9 @@ class ConsentController extends Controller
         ]);
 
         $this->logActivity('consent-create', $asset, [
-            'person_name'  => $validated['person_name'],
+            'person_name' => $validated['person_name'],
             'consent_type' => $validated['consent_type'],
-            'status'       => $validated['status'],
+            'status' => $validated['status'],
         ]);
 
         return response()->json(['data' => $consent->load('asset:id,original_name')], 201);
@@ -110,7 +109,7 @@ class ConsentController extends Controller
      */
     public function show(Consent $consent): JsonResponse
     {
-        if (!auth()->user()->isAdmin()) {
+        if (! auth()->user()->isAdmin()) {
             $consent->loadMissing('asset');
             if ($consent->asset?->user_id !== auth()->id()) {
                 return response()->json(['message' => 'Forbidden.'], 403);
@@ -125,7 +124,7 @@ class ConsentController extends Controller
      */
     public function update(Request $request, Consent $consent): JsonResponse
     {
-        if (!auth()->user()->isAdmin()) {
+        if (! auth()->user()->isAdmin()) {
             $consent->loadMissing('asset');
             if ($consent->asset?->user_id !== auth()->id()) {
                 return response()->json(['message' => 'Forbidden.'], 403);
@@ -133,17 +132,17 @@ class ConsentController extends Controller
         }
 
         $validated = $request->validate([
-            'person_name'  => 'sometimes|string|max:255',
+            'person_name' => 'sometimes|string|max:255',
             'person_email' => 'sometimes|nullable|email|max:255',
             'consent_date' => 'sometimes|date',
             'consent_type' => 'sometimes|in:photo,video,audio,general',
-            'status'       => 'sometimes|in:obtained,pending,denied',
-            'notes'        => 'nullable|string|max:1000',
-            'document'     => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'status' => 'sometimes|in:obtained,pending,denied',
+            'notes' => 'nullable|string|max:1000',
+            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         if ($request->hasFile('document')) {
-            if ($consent->document_path && !Storage::disk('local')->delete($consent->document_path)) {
+            if ($consent->document_path && ! Storage::disk('local')->delete($consent->document_path)) {
                 \Log::warning('Failed to delete consent document', ['consent_id' => $consent->id]);
             }
             $validated['document_path'] = $request->file('document')->store('consents', 'local');
@@ -154,7 +153,7 @@ class ConsentController extends Controller
         $consent->loadMissing('asset');
         $this->logActivity('consent-update', $consent->asset, [
             'person_name' => $consent->person_name,
-            'status'      => $consent->status,
+            'status' => $consent->status,
         ]);
 
         return response()->json(['data' => $consent->fresh()->load('asset:id,original_name')]);
@@ -172,7 +171,7 @@ class ConsentController extends Controller
             return response()->json(['message' => 'You do not have permission to delete this consent record.'], 403);
         }
 
-        if ($consent->document_path && !Storage::disk('local')->delete($consent->document_path)) {
+        if ($consent->document_path && ! Storage::disk('local')->delete($consent->document_path)) {
             \Log::warning('Failed to delete consent document', ['consent_id' => $consent->id]);
         }
 
@@ -207,9 +206,9 @@ class ConsentController extends Controller
             });
 
             fclose($handle);
-        }, 'consents_' . now()->format('Y-m-d') . '.csv', [
-            'Content-Type'        => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="consents_' . now()->format('Y-m-d') . '.csv"',
+        }, 'consents_'.now()->format('Y-m-d').'.csv', [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="consents_'.now()->format('Y-m-d').'.csv"',
         ]);
     }
 
@@ -219,7 +218,7 @@ class ConsentController extends Controller
      */
     public function publicationCheck(Asset $asset): JsonResponse
     {
-        if (!auth()->user()->isAdmin() && $asset->user_id !== auth()->id()) {
+        if (! auth()->user()->isAdmin() && $asset->user_id !== auth()->id()) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
@@ -242,22 +241,22 @@ class ConsentController extends Controller
         $token = $service->generateToken($consent);
 
         $frontendUrl = rtrim(config('app.frontend_url', config('app.url')), '/');
-        $url = $frontendUrl . '/consent/' . $token;
+        $url = $frontendUrl.'/consent/'.$token;
 
         $consent->loadMissing('asset.metadata');
 
         // Send consent request email if the person's email is known
         if ($consent->person_email) {
             $expiresAt = now()->addDays(7)->format('d F Y');
-            $orgName   = config('app.name', 'Mnemos');
+            $orgName = config('app.name', 'Mnemos');
             Mail::to($consent->person_email)
                 ->send(new ConsentRequestMail($consent, $url, $expiresAt, $orgName));
         }
 
         return response()->json([
             'data' => [
-                'token'      => $token,
-                'url'        => $url,
+                'token' => $token,
+                'url' => $url,
                 'expires_at' => now()->addDays(7)->toISOString(),
             ],
         ]);

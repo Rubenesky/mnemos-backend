@@ -12,16 +12,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Each row captures the model used, a summary of the prompt, and a
  * preview of the response to satisfy EU AI Act traceability requirements.
  *
- * @property int         $id
- * @property int         $asset_id
- * @property string      $generation_type  alt_text|tags|description|report|story
- * @property string      $model
- * @property string      $prompt_summary
- * @property string      $response_preview
- * @property int|null    $user_id
+ * @property int $id
+ * @property int $asset_id
+ * @property string $generation_type alt_text|tags|description|report|story
+ * @property string $model
+ * @property string $prompt_summary
+ * @property string $response_preview
+ * @property int|null $user_id
  * @property \Illuminate\Support\Carbon $created_at
  *
- * @package App\Models
  * @author  RJC
  */
 class AiGeneration extends Model

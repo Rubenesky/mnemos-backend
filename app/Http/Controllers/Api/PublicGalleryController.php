@@ -13,13 +13,12 @@ use Illuminate\Http\Request;
 /**
  * Serves public-facing gallery endpoints — no authentication required.
  *
- * @package App\Http\Controllers\Api
  * @author  RJC
  */
 class PublicGalleryController extends Controller
 {
     /**
-     * @param OrganizationSettingsService $settings  Used to expose org name in all public responses
+     * @param  OrganizationSettingsService  $settings  Used to expose org name in all public responses
      */
     public function __construct(
         private readonly OrganizationSettingsService $settings,
@@ -38,10 +37,9 @@ class PublicGalleryController extends Controller
      *   ?collection={slug}    Filter by category slug. Silently ignored if the
      *                         slug belongs to a private category (backwards-compat).
      *
-     * @param  Request  $request
-     * @return JsonResponse  200 { org_name, data, current_page, last_page, total }
-     *                     | 403 if collection_id points to a private category
-     *                     | 404 if collection_id does not exist
+     * @return JsonResponse 200 { org_name, data, current_page, last_page, total }
+     *                      | 403 if collection_id points to a private category
+     *                      | 404 if collection_id does not exist
      */
     public function assets(Request $request): JsonResponse
     {
@@ -78,11 +76,11 @@ class PublicGalleryController extends Controller
         $paginated = $query->paginate(12);
 
         return response()->json([
-            'org_name'     => $this->settings->get('org_name', 'Mnemos'),
-            'data'         => $paginated->map(fn ($a) => $this->formatAsset($a))->values(),
+            'org_name' => $this->settings->get('org_name', 'Mnemos'),
+            'data' => $paginated->map(fn ($a) => $this->formatAsset($a))->values(),
             'current_page' => $paginated->currentPage(),
-            'last_page'    => $paginated->lastPage(),
-            'total'        => $paginated->total(),
+            'last_page' => $paginated->lastPage(),
+            'total' => $paginated->total(),
         ]);
     }
 
@@ -92,7 +90,7 @@ class PublicGalleryController extends Controller
      * Lists all public categories with their public asset counts.
      * Used as optional filter tabs in the gallery.
      *
-     * @return JsonResponse  200 { org_name: string, data: Category[] }
+     * @return JsonResponse 200 { org_name: string, data: Category[] }
      */
     public function collections(): JsonResponse
     {
@@ -106,7 +104,7 @@ class PublicGalleryController extends Controller
 
         return response()->json([
             'org_name' => $this->settings->get('org_name', 'Mnemos'),
-            'data'     => $collections,
+            'data' => $collections,
         ]);
     }
 
@@ -116,8 +114,7 @@ class PublicGalleryController extends Controller
      * Lists public assets within a specific collection (by slug).
      * Kept for backwards-compatible shareable URLs.
      *
-     * @param  string  $slug
-     * @return JsonResponse  200 { collection: {...}, assets: { data, current_page, last_page, total } }
+     * @return JsonResponse 200 { collection: {...}, assets: { data, current_page, last_page, total } }
      */
     public function collection(string $slug): JsonResponse
     {
@@ -133,16 +130,16 @@ class PublicGalleryController extends Controller
 
         return response()->json([
             'collection' => [
-                'id'          => $category->id,
-                'name'        => $category->name,
-                'slug'        => $category->slug,
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
                 'description' => $category->description,
             ],
             'assets' => [
-                'data'         => $assets->map(fn ($a) => $this->formatAsset($a))->values(),
+                'data' => $assets->map(fn ($a) => $this->formatAsset($a))->values(),
                 'current_page' => $assets->currentPage(),
-                'last_page'    => $assets->lastPage(),
-                'total'        => $assets->total(),
+                'last_page' => $assets->lastPage(),
+                'total' => $assets->total(),
             ],
         ]);
     }
@@ -152,8 +149,7 @@ class PublicGalleryController extends Controller
      *
      * Returns a single public processed asset by ID.
      *
-     * @param  int  $id
-     * @return JsonResponse  200 { data: Asset } | 404
+     * @return JsonResponse 200 { data: Asset } | 404
      */
     public function asset(int $id): JsonResponse
     {
@@ -167,7 +163,7 @@ class PublicGalleryController extends Controller
         try {
             AssetView::create([
                 'asset_id' => $asset->id,
-                'ip_hash'  => hash('sha256', request()->ip() ?? ''),
+                'ip_hash' => hash('sha256', request()->ip() ?? ''),
             ]);
         } catch (\Throwable) {
         }
@@ -179,28 +175,27 @@ class PublicGalleryController extends Controller
      * Format an asset for all public API responses.
      * Excludes internal fields (path, file_hash, user_id).
      *
-     * @param  Asset  $asset
      * @return array{id: int, original_name: string, mime_type: string, cloudinary_url: string|null, created_at: string|null, metadata: array|null, categories: array}
      */
     private function formatAsset(Asset $asset): array
     {
         return [
-            'id'             => $asset->id,
-            'original_name'  => $asset->original_name,
-            'mime_type'      => $asset->mime_type,
+            'id' => $asset->id,
+            'original_name' => $asset->original_name,
+            'mime_type' => $asset->mime_type,
             'cloudinary_url' => $asset->cloudinary_url,
-            'created_at'     => $asset->created_at?->toISOString(),
-            'metadata'       => $asset->metadata ? [
-                'title'        => $asset->metadata->title,
-                'description'  => $asset->metadata->description,
-                'tags'         => $asset->metadata->tags ?? [],
+            'created_at' => $asset->created_at?->toISOString(),
+            'metadata' => $asset->metadata ? [
+                'title' => $asset->metadata->title,
+                'description' => $asset->metadata->description,
+                'tags' => $asset->metadata->tags ?? [],
                 'ai_generated' => $asset->metadata->ai_generated,
             ] : null,
-            'categories'     => $asset->categories->map(fn ($c) => [
-                'id'   => $c->id,
+            'categories' => $asset->categories->map(fn ($c) => [
+                'id' => $c->id,
                 'name' => $c->name,
                 'slug' => $c->slug,
-            ]),
+            ])->values()->all(),
         ];
     }
 }

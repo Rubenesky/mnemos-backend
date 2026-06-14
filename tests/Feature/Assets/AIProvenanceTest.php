@@ -68,9 +68,9 @@ test('recordGeneration does not overwrite ai_generated_at on subsequent calls', 
 });
 
 test('markReviewed stamps ai_reviewed_by and ai_reviewed_at on asset', function () {
-    $admin  = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $admin->id]);
+    $asset = Asset::factory()->create(['user_id' => $admin->id]);
 
     app(AIProvenanceService::class)->markReviewed($asset, $editor->id);
 
@@ -95,10 +95,10 @@ test('provenance endpoint returns correct json structure', function () {
     $asset = Asset::factory()->create(['user_id' => $admin->id]);
 
     AssetMetadata::create([
-        'asset_id'     => $asset->id,
-        'title'        => 'Test',
-        'description'  => 'Desc',
-        'tags'         => [],
+        'asset_id' => $asset->id,
+        'title' => 'Test',
+        'description' => 'Desc',
+        'tags' => [],
         'ai_generated' => true,
     ]);
 
@@ -137,7 +137,7 @@ test('provenance endpoint returns full generation history', function () {
 test('editor cannot view provenance of another users asset', function () {
     $editorA = User::factory()->create(['role' => 'editor']);
     $editorB = User::factory()->create(['role' => 'editor']);
-    $asset   = Asset::factory()->create(['user_id' => $editorA->id]);
+    $asset = Asset::factory()->create(['user_id' => $editorA->id]);
 
     $this->actingAs($editorB)
         ->getJson("/api/assets/{$asset->id}/provenance")
@@ -145,9 +145,9 @@ test('editor cannot view provenance of another users asset', function () {
 });
 
 test('admin can view provenance of any asset', function () {
-    $admin  = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
 
     $this->actingAs($admin)
         ->getJson("/api/assets/{$asset->id}/provenance")
@@ -156,7 +156,7 @@ test('admin can view provenance of any asset', function () {
 
 test('editor can view provenance of own asset', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
 
     $this->actingAs($editor)
         ->getJson("/api/assets/{$asset->id}/provenance")
@@ -181,7 +181,7 @@ test('admin can mark any asset as reviewed', function () {
 
 test('editor can mark their own asset as reviewed', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
 
     $this->actingAs($editor)
         ->postJson("/api/assets/{$asset->id}/provenance/review")
@@ -193,7 +193,7 @@ test('editor can mark their own asset as reviewed', function () {
 test('editor cannot mark another editors asset as reviewed', function () {
     $editorA = User::factory()->create(['role' => 'editor']);
     $editorB = User::factory()->create(['role' => 'editor']);
-    $asset   = Asset::factory()->create(['user_id' => $editorA->id]);
+    $asset = Asset::factory()->create(['user_id' => $editorA->id]);
 
     $this->actingAs($editorB)
         ->postJson("/api/assets/{$asset->id}/provenance/review")
@@ -202,7 +202,7 @@ test('editor cannot mark another editors asset as reviewed', function () {
 
 test('viewer cannot mark asset as reviewed', function () {
     $viewer = User::factory()->create(['role' => 'viewer']);
-    $asset  = Asset::factory()->create(['user_id' => $viewer->id]);
+    $asset = Asset::factory()->create(['user_id' => $viewer->id]);
 
     $this->actingAs($viewer)
         ->postJson("/api/assets/{$asset->id}/provenance/review")
@@ -211,7 +211,7 @@ test('viewer cannot mark asset as reviewed', function () {
 
 test('volunteer cannot mark asset as reviewed', function () {
     $volunteer = User::factory()->create(['role' => 'volunteer']);
-    $asset     = Asset::factory()->create(['user_id' => $volunteer->id]);
+    $asset = Asset::factory()->create(['user_id' => $volunteer->id]);
 
     $this->actingAs($volunteer)
         ->postJson("/api/assets/{$asset->id}/provenance/review")

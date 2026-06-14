@@ -14,8 +14,8 @@ it('usuario autenticado puede listar sus notificaciones', function () {
 
     AppNotification::create([
         'user_id' => $user->id,
-        'type'    => 'consent_responded',
-        'data'    => ['consent_id' => 1, 'person_name' => 'Ana', 'status' => 'obtained', 'asset_id' => 1],
+        'type' => 'consent_responded',
+        'data' => ['consent_id' => 1, 'person_name' => 'Ana', 'status' => 'obtained', 'asset_id' => 1],
         'read_at' => null,
     ]);
 
@@ -41,14 +41,14 @@ it('solo devuelve las notificaciones del usuario autenticado', function () {
 
     AppNotification::create([
         'user_id' => $userA->id,
-        'type'    => 'volunteer_upload',
-        'data'    => ['asset_id' => 1, 'asset_name' => 'foto.jpg', 'uploader_name' => 'Paco'],
+        'type' => 'volunteer_upload',
+        'data' => ['asset_id' => 1, 'asset_name' => 'foto.jpg', 'uploader_name' => 'Paco'],
         'read_at' => null,
     ]);
     AppNotification::create([
         'user_id' => $userB->id,
-        'type'    => 'volunteer_upload',
-        'data'    => ['asset_id' => 2, 'asset_name' => 'otro.jpg', 'uploader_name' => 'Luis'],
+        'type' => 'volunteer_upload',
+        'data' => ['asset_id' => 2, 'asset_name' => 'otro.jpg', 'uploader_name' => 'Luis'],
         'read_at' => null,
     ]);
 
@@ -65,8 +65,8 @@ it('unread_count es 0 cuando todas están leídas', function () {
 
     AppNotification::create([
         'user_id' => $user->id,
-        'type'    => 'consent_responded',
-        'data'    => ['consent_id' => 1, 'person_name' => 'Ana', 'status' => 'obtained', 'asset_id' => 1],
+        'type' => 'consent_responded',
+        'data' => ['consent_id' => 1, 'person_name' => 'Ana', 'status' => 'obtained', 'asset_id' => 1],
         'read_at' => now(),
     ]);
 
@@ -83,15 +83,15 @@ it('usuario puede marcar una notificación propia como leída', function () {
 
     $notification = AppNotification::create([
         'user_id' => $user->id,
-        'type'    => 'consent_responded',
-        'data'    => ['consent_id' => 1, 'person_name' => 'Ana', 'status' => 'obtained', 'asset_id' => 1],
+        'type' => 'consent_responded',
+        'data' => ['consent_id' => 1, 'person_name' => 'Ana', 'status' => 'obtained', 'asset_id' => 1],
         'read_at' => null,
     ]);
 
     $this->actingAs($user, 'sanctum')
         ->postJson("/api/notifications/{$notification->id}/read")
         ->assertStatus(200)
-        ->assertJsonPath('data.read_at', fn($v) => $v !== null);
+        ->assertJsonPath('data.read_at', fn ($v) => $v !== null);
 
     $this->assertNotNull($notification->fresh()->read_at);
 });
@@ -102,8 +102,8 @@ it('usuario no puede marcar como leída una notificación ajena', function () {
 
     $notification = AppNotification::create([
         'user_id' => $owner->id,
-        'type'    => 'consent_responded',
-        'data'    => ['consent_id' => 1, 'person_name' => 'Ana', 'status' => 'obtained', 'asset_id' => 1],
+        'type' => 'consent_responded',
+        'data' => ['consent_id' => 1, 'person_name' => 'Ana', 'status' => 'obtained', 'asset_id' => 1],
         'read_at' => null,
     ]);
 
@@ -138,8 +138,8 @@ it('NotificationService::notifyAdmins crea una notificación por cada admin', fu
 
     $service = app(NotificationService::class);
     $service->notifyAdmins('volunteer_upload', [
-        'asset_id'      => 5,
-        'asset_name'    => 'test.jpg',
+        'asset_id' => 5,
+        'asset_name' => 'test.jpg',
         'uploader_name' => 'Volunteer',
     ]);
 
@@ -152,10 +152,10 @@ it('NotificationService::notify crea una sola notificación para el destinatario
 
     $service = app(NotificationService::class);
     $service->notify($user, 'consent_responded', [
-        'consent_id'  => 3,
+        'consent_id' => 3,
         'person_name' => 'María',
-        'status'      => 'denied',
-        'asset_id'    => 7,
+        'status' => 'denied',
+        'asset_id' => 7,
     ]);
 
     expect(AppNotification::where('user_id', $user->id)->count())->toBe(1);

@@ -17,7 +17,6 @@ use App\Models\Consent;
  * An asset is considered "blocked" when it has at least one consent
  * with status 'pending' or 'denied'.
  *
- * @package App\Services
  * @author  RJC
  */
 class ConsentRiskService
@@ -33,16 +32,16 @@ class ConsentRiskService
      *   total_assets:       int,
      *   blocked_percentage: float,
      *   risk_level:         'low'|'medium'|'high',
-     *   alerts:             string[],
+     *   alerts:             array<int, array{key: string, count?: int}>,
      * }
      */
     public function calculateRisk(): array
     {
-        $totalAssets      = Asset::count();
-        $pendingConsents  = Consent::where('status', 'pending')->count();
+        $totalAssets = Asset::count();
+        $pendingConsents = Consent::where('status', 'pending')->count();
         $acceptedConsents = Consent::where('status', 'obtained')->count();
         $rejectedConsents = Consent::where('status', 'denied')->count();
-        $totalConsents    = $pendingConsents + $acceptedConsents + $rejectedConsents;
+        $totalConsents = $pendingConsents + $acceptedConsents + $rejectedConsents;
 
         // An asset is blocked when it has ≥1 consent that is pending or denied
         $blockedAssets = Asset::whereHas(
@@ -55,14 +54,14 @@ class ConsentRiskService
             : 0.0;
 
         return [
-            'pending_consents'   => $pendingConsents,
-            'accepted_consents'  => $acceptedConsents,
-            'rejected_consents'  => $rejectedConsents,
-            'blocked_assets'     => $blockedAssets,
-            'total_assets'       => $totalAssets,
+            'pending_consents' => $pendingConsents,
+            'accepted_consents' => $acceptedConsents,
+            'rejected_consents' => $rejectedConsents,
+            'blocked_assets' => $blockedAssets,
+            'total_assets' => $totalAssets,
             'blocked_percentage' => $blockedPct,
-            'risk_level'         => $this->resolveRiskLevel($blockedPct, $pendingConsents, $rejectedConsents, $totalConsents),
-            'alerts'             => $this->buildAlerts($blockedAssets, $pendingConsents, $rejectedConsents, $totalConsents),
+            'risk_level' => $this->resolveRiskLevel($blockedPct, $pendingConsents, $rejectedConsents, $totalConsents),
+            'alerts' => $this->buildAlerts($blockedAssets, $pendingConsents, $rejectedConsents, $totalConsents),
         ];
     }
 
@@ -75,10 +74,10 @@ class ConsentRiskService
      *
      * Evaluated from highest to lowest severity so HIGH always takes precedence.
      *
-     * @param  float $blockedPct  Percentage of assets that are blocked (0–100)
-     * @param  int   $pending     Number of pending consent records
-     * @param  int   $rejected    Number of denied consent records
-     * @param  int   $total       Total consent records (pending + accepted + rejected)
+     * @param  float  $blockedPct  Percentage of assets that are blocked (0–100)
+     * @param  int  $pending  Number of pending consent records
+     * @param  int  $rejected  Number of denied consent records
+     * @param  int  $total  Total consent records (pending + accepted + rejected)
      * @return 'low'|'medium'|'high'
      */
     private function resolveRiskLevel(float $blockedPct, int $pending, int $rejected, int $total): string
@@ -105,10 +104,10 @@ class ConsentRiskService
      *
      * Returns an empty array when everything is within safe thresholds.
      *
-     * @param  int $blocked  Number of assets that cannot be published
-     * @param  int $pending  Number of pending consent records
-     * @param  int $rejected Number of denied consent records
-     * @param  int $total    Total consent records
+     * @param  int  $blocked  Number of assets that cannot be published
+     * @param  int  $pending  Number of pending consent records
+     * @param  int  $rejected  Number of denied consent records
+     * @param  int  $total  Total consent records
      * @return array<int, array{key: string, count?: int}>
      */
     private function buildAlerts(int $blocked, int $pending, int $rejected, int $total): array

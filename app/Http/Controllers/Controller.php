@@ -8,8 +8,6 @@ use Illuminate\Routing\Controller as BaseController;
 
 /**
  * Base controller class providing shared functionality for all controllers.
- *
- * @package App\Http\Controllers
  */
 class Controller extends BaseController
 {

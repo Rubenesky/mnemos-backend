@@ -9,20 +9,20 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 test('gemini timeout leaves asset in error status and does not throw uncaptured exception', function () {
-    $user  = User::factory()->create();
+    $user = User::factory()->create();
     $asset = Asset::factory()->create([
         'user_id' => $user->id,
-        'status'  => 'pending',
+        'status' => 'pending',
     ]);
 
     $this->mock(GeminiService::class, function ($mock) {
         $mock->shouldReceive('generateAssetMetadata')
-             ->andThrow(new \RuntimeException('Gemini API timeout'));
+            ->andThrow(new \RuntimeException('Gemini API timeout'));
         $mock->shouldReceive('generateAltText')
-             ->andThrow(new \RuntimeException('Gemini API timeout'));
+            ->andThrow(new \RuntimeException('Gemini API timeout'));
     });
 
-    $job       = new ProcessAssetAI($asset->id);
+    $job = new ProcessAssetAI($asset->id);
     $exception = null;
 
     try {

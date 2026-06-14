@@ -19,20 +19,21 @@ class ProcessAssetAI implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 3;
+    public int $tries = 3;
+
     public int $backoff = 30;
+
     public int $timeout = 120;
 
-    public function __construct(public readonly int $assetId)
-    {
-    }
+    public function __construct(public readonly int $assetId) {}
 
     public function handle(): void
     {
         $asset = Asset::find($this->assetId);
 
-        if (!$asset) {
+        if (! $asset) {
             Log::warning('ProcessAssetAI: asset not found', ['asset_id' => $this->assetId]);
+
             return;
         }
 
@@ -40,15 +41,15 @@ class ProcessAssetAI implements ShouldQueue
             return;
         }
 
-        $gemini     = app(GeminiService::class);
-        $extractor  = app(TextExtractionService::class);
+        $gemini = app(GeminiService::class);
+        $extractor = app(TextExtractionService::class);
         $provenance = app(AIProvenanceService::class);
 
         $extractedText = null;
 
         if ($extractor->isSupported($asset->mime_type) && $asset->cloudinary_url) {
             $extractedText = $extractor->extract($asset->cloudinary_url, $asset->mime_type);
-            if (!empty($extractedText)) {
+            if (! empty($extractedText)) {
                 $asset->update(['extracted_text' => $extractedText]);
             }
         }
@@ -64,9 +65,9 @@ class ProcessAssetAI implements ShouldQueue
         AssetMetadata::updateOrCreate(
             ['asset_id' => $asset->id],
             [
-                'title'        => $metadata['title'],
-                'description'  => $metadata['description'],
-                'tags'         => $metadata['tags'],
+                'title' => $metadata['title'],
+                'description' => $metadata['description'],
+                'tags' => $metadata['tags'],
                 'ai_generated' => true,
             ]
         );
@@ -83,7 +84,7 @@ class ProcessAssetAI implements ShouldQueue
         } catch (\Throwable $e) {
             Log::warning('AIProvenance: failed to record metadata generation', [
                 'asset_id' => $asset->id,
-                'error'    => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
 
@@ -97,7 +98,7 @@ class ProcessAssetAI implements ShouldQueue
         // Generate alt-text for image assets
         if (str_starts_with($asset->mime_type, 'image/') && $asset->cloudinary_url) {
             $altText = $gemini->generateAltText($asset->cloudinary_url);
-            if (!empty($altText)) {
+            if (! empty($altText)) {
                 $asset->update(['alt_text' => $altText]);
 
                 // Record provenance for the alt-text generation
@@ -112,7 +113,7 @@ class ProcessAssetAI implements ShouldQueue
                 } catch (\Throwable $e) {
                     Log::warning('AIProvenance: failed to record alt-text generation', [
                         'asset_id' => $asset->id,
-                        'error'    => $e->getMessage(),
+                        'error' => $e->getMessage(),
                     ]);
                 }
             }
@@ -125,7 +126,7 @@ class ProcessAssetAI implements ShouldQueue
     {
         Log::error('ProcessAssetAI permanently failed', [
             'asset_id' => $this->assetId,
-            'error'    => $exception->getMessage(),
+            'error' => $exception->getMessage(),
         ]);
 
         Asset::where('id', $this->assetId)->update(['status' => 'error']);

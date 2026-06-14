@@ -27,7 +27,7 @@ test('admin can mark asset as emergency kit', function () {
 
 test('editor can mark their own asset as emergency kit', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
 
     $response = $this->actingAs($editor)
         ->patchJson("/api/assets/{$asset->id}/emergency-kit", ['is_emergency_kit' => true]);
@@ -37,8 +37,8 @@ test('editor can mark their own asset as emergency kit', function () {
 
 test('editor cannot mark another users asset as emergency kit', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $other  = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $other->id]);
+    $other = User::factory()->create(['role' => 'editor']);
+    $asset = Asset::factory()->create(['user_id' => $other->id]);
 
     $response = $this->actingAs($editor)
         ->patchJson("/api/assets/{$asset->id}/emergency-kit", ['is_emergency_kit' => true]);
@@ -48,7 +48,7 @@ test('editor cannot mark another users asset as emergency kit', function () {
 
 test('viewer cannot toggle emergency kit', function () {
     $viewer = User::factory()->create(['role' => 'viewer']);
-    $asset  = Asset::factory()->create(['user_id' => $viewer->id]);
+    $asset = Asset::factory()->create(['user_id' => $viewer->id]);
 
     $response = $this->actingAs($viewer)
         ->patchJson("/api/assets/{$asset->id}/emergency-kit", ['is_emergency_kit' => true]);
@@ -70,9 +70,9 @@ test('admin can download emergency kit zip', function () {
 
     $admin = User::factory()->create(['role' => 'admin']);
     Asset::factory()->create([
-        'user_id'          => $admin->id,
+        'user_id' => $admin->id,
         'is_emergency_kit' => true,
-        'cloudinary_url'   => 'https://fake-cloudinary.com/image.jpg',
+        'cloudinary_url' => 'https://fake-cloudinary.com/image.jpg',
     ]);
 
     $response = $this->actingAs($admin)->get('/api/emergency-kit/download');
@@ -103,11 +103,11 @@ test('emergency kit service always includes manifest csv', function () {
     Asset::factory()->create(['user_id' => $admin->id, 'is_emergency_kit' => true]);
 
     $service = app(EmergencyKitService::class);
-    $path    = $service->build();
+    $path = $service->build();
 
     $this->assertFileExists($path);
 
-    $zip = new ZipArchive();
+    $zip = new ZipArchive;
     $zip->open($path);
     $this->assertNotFalse($zip->locateName('manifest.csv'));
     $zip->close();
@@ -120,18 +120,18 @@ test('emergency kit service limits assets to 50 maximum', function () {
 
     $admin = User::factory()->create(['role' => 'admin']);
     Asset::factory()->count(55)->create([
-        'user_id'          => $admin->id,
+        'user_id' => $admin->id,
         'is_emergency_kit' => true,
-        'cloudinary_url'   => 'https://fake-cloudinary.com/file.jpg',
-        'original_name'    => 'photo.jpg',
+        'cloudinary_url' => 'https://fake-cloudinary.com/file.jpg',
+        'original_name' => 'photo.jpg',
     ]);
 
     $service = app(EmergencyKitService::class);
-    $path    = $service->build();
+    $path = $service->build();
 
     $this->assertFileExists($path);
 
-    $zip = new ZipArchive();
+    $zip = new ZipArchive;
     $zip->open($path);
     // At most 50 asset entries + 1 manifest.csv = 51 entries
     $this->assertLessThanOrEqual(51, $zip->numFiles);
@@ -146,17 +146,17 @@ test('emergency kit service cleans up temp asset files after build', function ()
 
     $admin = User::factory()->create(['role' => 'admin']);
     Asset::factory()->count(3)->create([
-        'user_id'          => $admin->id,
+        'user_id' => $admin->id,
         'is_emergency_kit' => true,
-        'cloudinary_url'   => 'https://fake-cloudinary.com/file.jpg',
+        'cloudinary_url' => 'https://fake-cloudinary.com/file.jpg',
     ]);
 
-    $tmpsBefore = glob(sys_get_temp_dir() . '/mnemos_asset_*') ?: [];
+    $tmpsBefore = glob(sys_get_temp_dir().'/mnemos_asset_*') ?: [];
 
     $service = app(EmergencyKitService::class);
-    $path    = $service->build();
+    $path = $service->build();
 
-    $tmpsAfter = glob(sys_get_temp_dir() . '/mnemos_asset_*') ?: [];
+    $tmpsAfter = glob(sys_get_temp_dir().'/mnemos_asset_*') ?: [];
     $this->assertCount(count($tmpsBefore), $tmpsAfter, 'Temp asset files were not cleaned up after build()');
 
     @unlink($path);

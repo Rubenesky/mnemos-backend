@@ -14,9 +14,9 @@ return new class extends Migration
             $table->string('slug')->unique();          // URL amigable: "imagenes-web"
             $table->text('description')->nullable();
             $table->foreignId('parent_id')             // para subcategorías
-                  ->nullable()
-                  ->constrained('categories')
-                  ->onDelete('set null');
+                ->nullable()
+                ->constrained('categories')
+                ->onDelete('set null');
             $table->timestamps();
         });
     }

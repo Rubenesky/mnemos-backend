@@ -18,8 +18,6 @@ use Illuminate\Support\Facades\Log;
  * latency from 10 s (sequential) to ~5 s.
  *
  * All routes require auth:sanctum + admin middleware.
- *
- * @package App\Http\Controllers\Api\Admin
  */
 class SystemStatusController extends Controller
 {
@@ -29,19 +27,19 @@ class SystemStatusController extends Controller
      * Performs real connectivity probes against the database, Cloudinary,
      * and Gemini AI and returns a health summary.
      *
-     * @return JsonResponse  200 {
-     *   database:  { ok: bool, latency_ms: int|null, error: string|null },
-     *   cloudinary:{ ok: bool, latency_ms: int|null, error: string|null },
-     *   gemini:    { ok: bool, latency_ms: int|null, error: string|null },
-     *   checked_at: string (ISO-8601)
-     * }
+     * @return JsonResponse 200 {
+     *                      database:  { ok: bool, latency_ms: int|null, error: string|null },
+     *                      cloudinary:{ ok: bool, latency_ms: int|null, error: string|null },
+     *                      gemini:    { ok: bool, latency_ms: int|null, error: string|null },
+     *                      checked_at: string (ISO-8601)
+     *                      }
      */
     public function status(): JsonResponse
     {
         return response()->json([
-            'database'   => $this->checkDatabase(),
+            'database' => $this->checkDatabase(),
             'cloudinary' => $this->checkCloudinary(),
-            'gemini'     => $this->checkGemini(),
+            'gemini' => $this->checkGemini(),
             'checked_at' => now()->toIso8601String(),
         ]);
     }
@@ -57,20 +55,22 @@ class SystemStatusController extends Controller
         $start = microtime(true);
         try {
             DB::connection()->getPdo();
+
             return [
-                'ok'         => true,
+                'ok' => true,
                 'latency_ms' => (int) round((microtime(true) - $start) * 1000),
-                'error'      => null,
+                'error' => null,
             ];
         } catch (\Exception $e) {
             Log::error('System status: database probe failed', [
-                'code'  => $e->getCode(),
+                'code' => $e->getCode(),
                 'error' => $e->getMessage(),
             ]);
+
             return [
-                'ok'         => false,
+                'ok' => false,
                 'latency_ms' => null,
-                'error'      => 'Database connection failed (code: ' . $e->getCode() . ')',
+                'error' => 'Database connection failed (code: '.$e->getCode().')',
             ];
         }
     }
@@ -84,7 +84,7 @@ class SystemStatusController extends Controller
     private function checkCloudinary(): array
     {
         $cloudName = env('CLOUDINARY_CLOUD_NAME', config('cloudinary.cloud_name', ''));
-        $apiKey    = env('CLOUDINARY_API_KEY', config('cloudinary.api_key', ''));
+        $apiKey = env('CLOUDINARY_API_KEY', config('cloudinary.api_key', ''));
         $apiSecret = env('CLOUDINARY_API_SECRET', config('cloudinary.api_secret', ''));
 
         $start = microtime(true);
@@ -97,16 +97,17 @@ class SystemStatusController extends Controller
             $latency = (int) round((microtime(true) - $start) * 1000);
 
             return [
-                'ok'         => $ok,
+                'ok' => $ok,
                 'latency_ms' => $ok ? $latency : null,
-                'error'      => $ok ? null : 'Cloudinary ping returned non-ok status',
+                'error' => $ok ? null : 'Cloudinary ping returned non-ok status',
             ];
         } catch (\Exception $e) {
             Log::error('System status: Cloudinary probe failed', ['error' => $e->getMessage()]);
+
             return [
-                'ok'         => false,
+                'ok' => false,
                 'latency_ms' => null,
-                'error'      => 'Cloudinary connection failed',
+                'error' => 'Cloudinary connection failed',
             ];
         }
     }
@@ -131,16 +132,17 @@ class SystemStatusController extends Controller
             $latency = (int) round((microtime(true) - $start) * 1000);
 
             return [
-                'ok'         => $ok,
+                'ok' => $ok,
                 'latency_ms' => $ok ? $latency : null,
-                'error'      => $ok ? null : 'Gemini API returned non-2xx status',
+                'error' => $ok ? null : 'Gemini API returned non-2xx status',
             ];
         } catch (\Exception $e) {
             Log::error('System status: Gemini probe failed', ['error' => $e->getMessage()]);
+
             return [
-                'ok'         => false,
+                'ok' => false,
                 'latency_ms' => null,
-                'error'      => 'Gemini API connection failed',
+                'error' => 'Gemini API connection failed',
             ];
         }
     }

@@ -15,7 +15,6 @@ uses(RefreshDatabase::class);
 /**
  * Feature tests for GET /api/reports/impact-dashboard.
  */
-
 beforeEach(fn () => Cache::flush());
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,7 +98,7 @@ test('hours_saved equals alt_texts_generated times 0.083', function () {
     $admin = User::factory()->create(['role' => 'admin']);
 
     Asset::factory()->count(10)->create([
-        'user_id'  => $admin->id,
+        'user_id' => $admin->id,
         'alt_text' => 'AI-generated description',
     ]);
 
@@ -146,7 +145,7 @@ test('consents_granted counts only obtained consents', function () {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test('top_assets are ordered by view_count descending', function () {
-    $admin  = User::factory()->create(['role' => 'admin']);
+    $admin = User::factory()->create(['role' => 'admin']);
     $asset1 = Asset::factory()->create(['user_id' => $admin->id]);
     $asset2 = Asset::factory()->create(['user_id' => $admin->id]);
     $asset3 = Asset::factory()->create(['user_id' => $admin->id]);

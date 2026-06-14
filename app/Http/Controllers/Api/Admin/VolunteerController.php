@@ -14,8 +14,6 @@ use Illuminate\Support\Carbon;
  * Admin endpoints for managing volunteer accounts and their access expiry.
  *
  * All routes require auth:sanctum + admin middleware.
- *
- * @package App\Http\Controllers\Api\Admin
  */
 class VolunteerController extends Controller
 {
@@ -25,7 +23,7 @@ class VolunteerController extends Controller
      * Returns all users with the volunteer role, sorted by expires_at ascending
      * so the soonest-to-expire volunteers appear first.
      *
-     * @return JsonResponse  200 — array of volunteer objects
+     * @return JsonResponse 200 — array of volunteer objects
      */
     public function index(): JsonResponse
     {
@@ -52,9 +50,7 @@ class VolunteerController extends Controller
      * Validation rules:
      *  - days: required, integer, between 1 and 365
      *
-     * @param  Request  $request
-     * @param  User     $user
-     * @return JsonResponse  200 — updated volunteer object | 422 — not a volunteer
+     * @return JsonResponse 200 — updated volunteer object | 422 — not a volunteer
      */
     public function extend(Request $request, User $user): JsonResponse
     {
@@ -92,7 +88,6 @@ class VolunteerController extends Controller
      *  - 1 – 14         → yellow
      *  - <= 0           → red   (expired)
      *
-     * @param  User $user
      * @return array{
      *     id: int,
      *     name: string,
@@ -113,15 +108,15 @@ class VolunteerController extends Controller
         }
 
         return [
-            'id'             => $user->id,
-            'name'           => $user->name,
-            'email'          => $user->email,
-            'is_active'      => $user->is_active,
-            'created_at'     => $user->created_at?->toISOString(),
-            'last_login_at'  => $user->last_login_at?->toISOString(),
-            'expires_at'     => $user->expires_at?->toISOString(),
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'is_active' => $user->is_active,
+            'created_at' => $user->created_at?->toISOString(),
+            'last_login_at' => $user->last_login_at?->toISOString(),
+            'expires_at' => $user->expires_at?->toISOString(),
             'days_remaining' => $daysRemaining,
-            'assets_count'   => $user->assets_count ?? $user->assets()->count(),
+            'assets_count' => $user->assets_count ?? $user->assets()->count(),
         ];
     }
 }

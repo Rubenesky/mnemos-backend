@@ -5,22 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Represents a digital asset (image, video, document, or other file) stored in the system.
  *
- * @property bool        $is_public       Whether this asset is visible on the public gallery.
- * @property string|null $alt_text        Auto-generated accessibility description for image assets.
- * @property string|null $ai_model        AI model used for the first generation (e.g. 'gemini-2.5-flash').
- * @property \Illuminate\Support\Carbon|null $ai_generated_at  When the first AI generation occurred.
- * @property string|null $ai_prompt       Summary of the last prompt sent to the AI model.
- * @property int|null    $ai_reviewed_by  ID of the user who reviewed the AI content.
- * @property \Illuminate\Support\Carbon|null $ai_reviewed_at   When the AI content was reviewed.
- *
- * @package App\Models
+ * @property bool $is_public Whether this asset is visible on the public gallery.
+ * @property string|null $alt_text Auto-generated accessibility description for image assets.
+ * @property string|null $ai_model AI model used for the first generation (e.g. 'gemini-2.5-flash').
+ * @property \Illuminate\Support\Carbon|null $ai_generated_at When the first AI generation occurred.
+ * @property string|null $ai_prompt Summary of the last prompt sent to the AI model.
+ * @property int|null $ai_reviewed_by ID of the user who reviewed the AI content.
+ * @property \Illuminate\Support\Carbon|null $ai_reviewed_at When the AI content was reviewed.
  */
 class Asset extends Model
 {
@@ -51,11 +49,11 @@ class Asset extends Model
     ];
 
     protected $casts = [
-        'is_public'        => 'boolean',
-        'is_press_kit'     => 'boolean',
+        'is_public' => 'boolean',
+        'is_press_kit' => 'boolean',
         'is_emergency_kit' => 'boolean',
-        'ai_generated_at'  => 'datetime',
-        'ai_reviewed_at'   => 'datetime',
+        'ai_generated_at' => 'datetime',
+        'ai_reviewed_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

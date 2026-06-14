@@ -23,20 +23,20 @@ class ApiAssetTest extends TestCase
     {
         $user = User::factory()->create([
             'password' => bcrypt('password123'),
-            'role'     => 'viewer',
+            'role' => 'viewer',
         ]);
 
         $response = $this->postJson('/api/login', [
-            'email'    => $user->email,
+            'email' => $user->email,
             'password' => 'password123',
         ]);
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'success',
-                     'token',
-                     'user' => ['id', 'name', 'email', 'role']
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'token',
+                'user' => ['id', 'name', 'email', 'role'],
+            ]);
     }
 
     // Test 3: login incorrecto devuelve error
@@ -47,7 +47,7 @@ class ApiAssetTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/login', [
-            'email'    => $user->email,
+            'email' => $user->email,
             'password' => 'wrongpassword',
         ]);
 
@@ -63,40 +63,40 @@ class ApiAssetTest extends TestCase
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
-                         ->getJson('/api/assets');
+            ->getJson('/api/assets');
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'success',
-                     'data',
-                     'meta' => ['total', 'per_page', 'current_page', 'last_page']
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'data',
+                'meta' => ['total', 'per_page', 'current_page', 'last_page'],
+            ]);
     }
 
     // Test 5: usuario autenticado puede ver un asset individual
     public function test_authenticated_user_can_view_single_asset(): void
     {
-        $user  = User::factory()->create(['role' => 'viewer']);
+        $user = User::factory()->create(['role' => 'viewer']);
         $asset = Asset::factory()->create(['user_id' => $user->id]);
 
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
-                         ->getJson("/api/assets/{$asset->id}");
+            ->getJson("/api/assets/{$asset->id}");
 
         $response->assertStatus(200)
-                 ->assertJsonStructure([
-                     'success',
-                     'data' => ['id', 'original_name', 'mime_type', 'size_kb', 'status', 'url']
-                 ]);
+            ->assertJsonStructure([
+                'success',
+                'data' => ['id', 'original_name', 'mime_type', 'size_kb', 'status', 'url'],
+            ]);
     }
 
     // Test 6: solo admin puede borrar un asset via API
     public function test_only_admin_can_delete_asset_via_api(): void
     {
-        $admin  = User::factory()->create(['role' => 'admin']);
+        $admin = User::factory()->create(['role' => 'admin']);
         $viewer = User::factory()->create(['role' => 'viewer']);
-        $asset  = Asset::factory()->create(['user_id' => $admin->id]);
+        $asset = Asset::factory()->create(['user_id' => $admin->id]);
 
         // Viewer no puede borrar
         $this->actingAs($viewer, 'sanctum')
@@ -116,14 +116,14 @@ class ApiAssetTest extends TestCase
     // Test 7: logout invalida el token
     public function test_logout_invalidates_token(): void
     {
-        $user  = User::factory()->create(['role' => 'viewer']);
+        $user = User::factory()->create(['role' => 'viewer']);
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer {$token}")
-                        ->postJson('/api/logout');
+            ->postJson('/api/logout');
 
         $response->assertStatus(200)
-                ->assertJson(['success' => true]);
+            ->assertJson(['success' => true]);
 
         // Verificamos que el token fue eliminado de la BD
         $this->assertDatabaseCount('personal_access_tokens', 0);

@@ -12,7 +12,6 @@ use App\Models\Consent;
  * Uses PHP-side date grouping for assets_by_month so queries remain
  * compatible with both SQLite (tests) and PostgreSQL (production).
  *
- * @package App\Services
  * @author  RJC
  */
 class ImpactDashboardService
@@ -46,18 +45,18 @@ class ImpactDashboardService
 
         return [
             'summary' => [
-                'total_assets'        => Asset::count(),
-                'public_assets'       => Asset::where('is_public', true)->count(),
-                'total_downloads'     => AssetView::count(),
-                'consents_granted'    => Consent::where('status', 'obtained')->count(),
+                'total_assets' => Asset::count(),
+                'public_assets' => Asset::where('is_public', true)->count(),
+                'total_downloads' => AssetView::count(),
+                'consents_granted' => Consent::where('status', 'obtained')->count(),
                 'alt_texts_generated' => $altTextsGenerated,
-                'hours_saved'         => round($altTextsGenerated * self::HOURS_PER_ALT_TEXT, 2),
+                'hours_saved' => round($altTextsGenerated * self::HOURS_PER_ALT_TEXT, 2),
             ],
             'trends' => [
-                'assets_last_30_days'   => Asset::where('created_at', '>=', now()->subDays(30))->count(),
+                'assets_last_30_days' => Asset::where('created_at', '>=', now()->subDays(30))->count(),
                 'consents_last_30_days' => Consent::where('created_at', '>=', now()->subDays(30))->count(),
-                'assets_by_month'       => $this->assetsByMonth(),
-                'consents_by_month'     => $this->consentsByMonth(),
+                'assets_by_month' => $this->assetsByMonth(),
+                'consents_by_month' => $this->consentsByMonth(),
             ],
             'top_assets' => $this->topAssets(),
         ];
@@ -140,9 +139,9 @@ class ImpactDashboardService
             ->limit(5)
             ->get()
             ->map(fn ($asset) => [
-                'id'         => $asset->id,
-                'title'      => $asset->metadata?->title ?? $asset->original_name,
-                'thumbnail'  => $asset->cloudinary_url,
+                'id' => $asset->id,
+                'title' => $asset->metadata?->title ?? $asset->original_name,
+                'thumbnail' => $asset->cloudinary_url,
                 'view_count' => $asset->asset_views_count,
             ])
             ->toArray();

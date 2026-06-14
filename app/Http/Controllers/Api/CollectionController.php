@@ -24,7 +24,6 @@ use Illuminate\Support\Str;
  *   POST   /api/collections/{id}/assets
  *   DELETE /api/collections/{id}/assets/{assetId}
  *
- * @package App\Http\Controllers\Api
  * @author  RJC
  */
 class CollectionController extends Controller
@@ -52,7 +51,7 @@ class CollectionController extends Controller
      *
      * Return all collections ordered by name, each with a total asset count.
      *
-     * @return JsonResponse  200 { success: true, data: Collection[] }
+     * @return JsonResponse 200 { success: true, data: Collection[] }
      */
     public function index(): JsonResponse
     {
@@ -62,7 +61,7 @@ class CollectionController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $collections->map(fn ($c) => $this->formatCollection($c)),
+            'data' => $collections->map(fn ($c) => $this->formatCollection($c)),
         ]);
     }
 
@@ -72,18 +71,18 @@ class CollectionController extends Controller
      * Create a new collection. Slug is auto-generated from the name and
      * guaranteed unique by appending an incrementing suffix when necessary.
      *
-     * @param  Request $request  { name: string, description?: string, is_public?: bool }
-     * @return JsonResponse      201 { success: true, data: Collection }
+     * @param  Request  $request  { name: string, description?: string, is_public?: bool }
+     * @return JsonResponse 201 { success: true, data: Collection }
      */
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:120',
+            'name' => 'required|string|max:120',
             'description' => 'nullable|string|max:500',
-            'is_public'   => 'boolean',
+            'is_public' => 'boolean',
         ]);
 
-        $validated['slug']      = $this->uniqueSlug($validated['name']);
+        $validated['slug'] = $this->uniqueSlug($validated['name']);
         $validated['is_public'] = $validated['is_public'] ?? false;
         $validated['parent_id'] = null;
 
@@ -92,7 +91,7 @@ class CollectionController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->formatCollection($collection),
+            'data' => $this->formatCollection($collection),
         ], 201);
     }
 
@@ -101,8 +100,7 @@ class CollectionController extends Controller
      *
      * Return a single collection together with a list of its assets.
      *
-     * @param  int $id
-     * @return JsonResponse  200 { success: true, data: Collection }  |  404
+     * @return JsonResponse 200 { success: true, data: Collection }  |  404
      */
     public function show(int $id): JsonResponse
     {
@@ -114,7 +112,7 @@ class CollectionController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->formatCollection($collection, withAssets: true),
+            'data' => $this->formatCollection($collection, withAssets: true),
         ]);
     }
 
@@ -124,18 +122,17 @@ class CollectionController extends Controller
      * Update a collection's name, description, or is_public flag.
      * The slug is regenerated automatically when the name changes.
      *
-     * @param  Request $request  { name?: string, description?: string, is_public?: bool }
-     * @param  int     $id
-     * @return JsonResponse  200 { success: true, data: Collection }  |  404
+     * @param  Request  $request  { name?: string, description?: string, is_public?: bool }
+     * @return JsonResponse 200 { success: true, data: Collection }  |  404
      */
     public function update(Request $request, int $id): JsonResponse
     {
         $collection = Category::findOrFail($id);
 
         $validated = $request->validate([
-            'name'        => 'sometimes|required|string|max:120',
+            'name' => 'sometimes|required|string|max:120',
             'description' => 'nullable|string|max:500',
-            'is_public'   => 'boolean',
+            'is_public' => 'boolean',
         ]);
 
         if (isset($validated['name']) && $validated['name'] !== $collection->name) {
@@ -146,7 +143,7 @@ class CollectionController extends Controller
 
         return response()->json([
             'success' => true,
-            'data'    => $this->formatCollection($collection->fresh()->loadCount('assets')),
+            'data' => $this->formatCollection($collection->fresh()->loadCount('assets')),
         ]);
     }
 
@@ -156,8 +153,7 @@ class CollectionController extends Controller
      * Delete a collection. Assets are never deleted — the cascade on the
      * asset_category FK handles pivot cleanup automatically.
      *
-     * @param  int $id
-     * @return JsonResponse  200 { success: true }  |  404
+     * @return JsonResponse 200 { success: true }  |  404
      */
     public function destroy(int $id): JsonResponse
     {
@@ -172,8 +168,7 @@ class CollectionController extends Controller
      *
      * Toggle the is_public flag on a collection.
      *
-     * @param  int $id
-     * @return JsonResponse  200 { success: true, is_public: bool }  |  404
+     * @return JsonResponse 200 { success: true, is_public: bool }  |  404
      */
     public function toggleVisibility(int $id): JsonResponse
     {
@@ -181,7 +176,7 @@ class CollectionController extends Controller
         $collection->update(['is_public' => ! $collection->is_public]);
 
         return response()->json([
-            'success'   => true,
+            'success' => true,
             'is_public' => (bool) $collection->is_public,
         ]);
     }
@@ -192,9 +187,8 @@ class CollectionController extends Controller
      * Add an asset to a collection. Idempotent — attaching an already-attached
      * asset does not create a duplicate pivot row.
      *
-     * @param  Request $request  { asset_id: int }
-     * @param  int     $id
-     * @return JsonResponse  200 { success: true, assets_count: int }  |  404 | 422
+     * @param  Request  $request  { asset_id: int }
+     * @return JsonResponse 200 { success: true, assets_count: int }  |  404 | 422
      */
     public function addAsset(Request $request, int $id): JsonResponse
     {
@@ -206,7 +200,7 @@ class CollectionController extends Controller
         $collection->assets()->syncWithoutDetaching([$request->integer('asset_id')]);
 
         return response()->json([
-            'success'      => true,
+            'success' => true,
             'assets_count' => $collection->assets()->count(),
         ]);
     }
@@ -216,9 +210,7 @@ class CollectionController extends Controller
      *
      * Remove an asset from a collection. The asset itself is not deleted.
      *
-     * @param  int $id
-     * @param  int $assetId
-     * @return JsonResponse  200 { success: true, assets_count: int }  |  404
+     * @return JsonResponse 200 { success: true, assets_count: int }  |  404
      */
     public function removeAsset(int $id, int $assetId): JsonResponse
     {
@@ -226,7 +218,7 @@ class CollectionController extends Controller
         $collection->assets()->detach($assetId);
 
         return response()->json([
-            'success'      => true,
+            'success' => true,
             'assets_count' => $collection->assets()->count(),
         ]);
     }
@@ -240,15 +232,13 @@ class CollectionController extends Controller
      *
      * If "my-collection" is taken, tries "my-collection-2", "my-collection-3", …
      *
-     * @param  string   $name
-     * @param  int|null $excludeId  Skip this ID when checking uniqueness (used on updates).
-     * @return string
+     * @param  int|null  $excludeId  Skip this ID when checking uniqueness (used on updates).
      */
     private function uniqueSlug(string $name, ?int $excludeId = null): string
     {
         $base = Str::slug($name);
         $slug = $base;
-        $i    = 2;
+        $i = 2;
 
         while (
             Category::where('slug', $slug)
@@ -265,32 +255,31 @@ class CollectionController extends Controller
     /**
      * Serialize a Category model for API responses.
      *
-     * @param  Category $collection
-     * @param  bool     $withAssets  When true, includes the full asset list.
-     * @return array{id: int, name: string, slug: string, description: string|null, is_public: bool, assets_count: int, created_at: string|null, updated_at: string|null, assets?: array}
+     * @param  bool  $withAssets  When true, includes the full asset list.
+     * @return array{id: int, name: string, slug: string, description: string|null, is_public: bool, assets_count: int<0, max>, created_at: string|null, updated_at: string|null, assets?: array}
      */
     private function formatCollection(Category $collection, bool $withAssets = false): array
     {
         $data = [
-            'id'           => $collection->id,
-            'name'         => $collection->name,
-            'slug'         => $collection->slug,
-            'description'  => $collection->description,
-            'is_public'    => (bool) $collection->is_public,
+            'id' => $collection->id,
+            'name' => $collection->name,
+            'slug' => $collection->slug,
+            'description' => $collection->description,
+            'is_public' => (bool) $collection->is_public,
             'assets_count' => (int) ($collection->assets_count ?? 0),
-            'created_at'   => $collection->created_at?->toISOString(),
-            'updated_at'   => $collection->updated_at?->toISOString(),
+            'created_at' => $collection->created_at?->toISOString(),
+            'updated_at' => $collection->updated_at?->toISOString(),
         ];
 
         if ($withAssets) {
             $data['assets'] = $collection->assets->map(fn ($a) => [
-                'id'             => $a->id,
-                'original_name'  => $a->original_name,
-                'mime_type'      => $a->mime_type,
+                'id' => $a->id,
+                'original_name' => $a->original_name,
+                'mime_type' => $a->mime_type,
                 'cloudinary_url' => $a->cloudinary_url,
-                'title'          => $a->metadata?->title,
-                'status'         => $a->status,
-            ])->values();
+                'title' => $a->metadata?->title,
+                'status' => $a->status,
+            ])->values()->all();
         }
 
         return $data;

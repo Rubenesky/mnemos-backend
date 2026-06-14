@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * REST API controller for natural-language asset search powered by the Gemini AI service.
- *
- * @package App\Http\Controllers\Api
  */
 class SearchApiController extends Controller
 {
@@ -26,7 +24,7 @@ class SearchApiController extends Controller
 
         // Parse the natural-language query into structured filters
         $nlSearch = app(NaturalLanguageSearchService::class);
-        $filters  = $nlSearch->parseQuery($userQuery);
+        $filters = $nlSearch->parseQuery($userQuery);
 
         // If Gemini failed and returned no filters, report it
         if (empty($filters)) {
@@ -45,35 +43,35 @@ class SearchApiController extends Controller
         // IDOR protection: non-admin users can only see their own assets
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             $query->where('user_id', $user->id);
         }
 
-        if (!empty($filters['search'])) {
+        if (! empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($q) use ($search, $likeOp) {
                 $q->where('original_name', $likeOp, "%{$search}%")
-                  ->orWhereHas('metadata', function ($q) use ($search, $likeOp) {
-                      $q->where('title', $likeOp, "%{$search}%")
-                        ->orWhere('description', $likeOp, "%{$search}%")
-                        ->orWhere('tags', $likeOp, "%{$search}%");
-                  });
+                    ->orWhereHas('metadata', function ($q) use ($search, $likeOp) {
+                        $q->where('title', $likeOp, "%{$search}%")
+                            ->orWhere('description', $likeOp, "%{$search}%")
+                            ->orWhere('tags', $likeOp, "%{$search}%");
+                    });
             });
         }
 
-        if (!empty($filters['type'])) {
-            $query->where('mime_type', $likeOp, $filters['type'] . '%');
+        if (! empty($filters['type'])) {
+            $query->where('mime_type', $likeOp, $filters['type'].'%');
         }
 
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
-        if (!empty($filters['date_from'])) {
+        if (! empty($filters['date_from'])) {
             $query->whereDate('created_at', '>=', $filters['date_from']);
         }
 
-        if (!empty($filters['date_to'])) {
+        if (! empty($filters['date_to'])) {
             $query->whereDate('created_at', '<=', $filters['date_to']);
         }
 
@@ -81,33 +79,33 @@ class SearchApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'query'   => $userQuery,
+            'query' => $userQuery,
             'filters' => $filters,
-            'data'    => $assets->getCollection()->map(function ($asset) {
+            'data' => $assets->getCollection()->map(function ($asset) {
                 return [
-                    'id'            => $asset->id,
+                    'id' => $asset->id,
                     'original_name' => $asset->original_name,
-                    'mime_type'     => $asset->mime_type,
-                    'size_kb'       => round($asset->size / 1024, 2),
-                    'status'        => $asset->status,
-                    'url'           => $asset->cloudinary_url
+                    'mime_type' => $asset->mime_type,
+                    'size_kb' => round($asset->size / 1024, 2),
+                    'status' => $asset->status,
+                    'url' => $asset->cloudinary_url
                                         ?: (str_starts_with($asset->path, 'http')
                                             ? $asset->path
-                                            : asset('storage/' . $asset->path)),
-                    'uploaded_by'   => $asset->user->name,
-                    'metadata'      => $asset->metadata ? [
-                        'title'       => $asset->metadata->title,
+                                            : asset('storage/'.$asset->path)),
+                    'uploaded_by' => $asset->user->name,
+                    'metadata' => $asset->metadata ? [
+                        'title' => $asset->metadata->title,
                         'description' => $asset->metadata->description,
-                        'tags'        => $asset->metadata->tags,
+                        'tags' => $asset->metadata->tags,
                     ] : null,
-                    'created_at'    => $asset->created_at->toISOString(),
+                    'created_at' => $asset->created_at->toISOString(),
                 ];
             }),
             'meta' => [
-                'total'        => $assets->total(),
-                'per_page'     => $assets->perPage(),
+                'total' => $assets->total(),
+                'per_page' => $assets->perPage(),
                 'current_page' => $assets->currentPage(),
-                'last_page'    => $assets->lastPage(),
+                'last_page' => $assets->lastPage(),
             ],
         ]);
     }

@@ -11,19 +11,19 @@ it('devuelve token con credenciales válidas', function () {
     ]);
 
     $response = $this->postJson('/api/login', [
-        'email'    => $user->email,
+        'email' => $user->email,
         'password' => 'password123',
     ]);
 
     $response->assertStatus(200)
-             ->assertJsonStructure(['token', 'user' => ['id', 'role']]);
+        ->assertJsonStructure(['token', 'user' => ['id', 'role']]);
 });
 
 it('rechaza credenciales incorrectas con 422', function () {
     $user = User::factory()->create();
 
     $this->postJson('/api/login', [
-        'email'    => $user->email,
+        'email' => $user->email,
         'password' => 'contraseña-incorrecta',
     ])->assertStatus(422);
 });
@@ -59,13 +59,13 @@ it('bloquea el login tras 5 intentos fallidos', function () {
 
     for ($i = 0; $i < 5; $i++) {
         $this->postJson('/api/login', [
-            'email'    => $user->email,
+            'email' => $user->email,
             'password' => 'wrong',
         ]);
     }
 
     $this->postJson('/api/login', [
-        'email'    => $user->email,
+        'email' => $user->email,
         'password' => 'wrong',
     ])->assertStatus(429);
 });

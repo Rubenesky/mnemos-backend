@@ -12,42 +12,42 @@ it('listado devuelve paginación correcta', function () {
     Asset::factory()->count(5)->create();
 
     $this->actingAs($user, 'sanctum')
-         ->getJson('/api/assets')
-         ->assertStatus(200)
-         ->assertJsonStructure([
-             'data',
-             'meta' => ['total', 'per_page', 'current_page', 'last_page'],
-         ]);
+        ->getJson('/api/assets')
+        ->assertStatus(200)
+        ->assertJsonStructure([
+            'data',
+            'meta' => ['total', 'per_page', 'current_page', 'last_page'],
+        ]);
 });
 
 it('detalle de asset tiene estructura completa', function () {
-    $user  = User::factory()->create();
+    $user = User::factory()->create();
     $asset = Asset::factory()->create(['user_id' => $user->id]);
     AssetMetadata::create([
-        'asset_id'     => $asset->id,
-        'title'        => 'Título de prueba',
-        'description'  => 'Descripción',
-        'tags'         => ['tag1'],
+        'asset_id' => $asset->id,
+        'title' => 'Título de prueba',
+        'description' => 'Descripción',
+        'tags' => ['tag1'],
         'ai_generated' => true,
     ]);
 
     $this->actingAs($user, 'sanctum')
-         ->getJson("/api/assets/{$asset->id}")
-         ->assertStatus(200)
-         ->assertJsonStructure([
-             'data' => ['id', 'url', 'metadata', 'categories', 'uploaded_by'],
-         ]);
+        ->getJson("/api/assets/{$asset->id}")
+        ->assertStatus(200)
+        ->assertJsonStructure([
+            'data' => ['id', 'url', 'metadata', 'categories', 'uploaded_by'],
+        ]);
 });
 
 it('editar metadatos actualiza título y tags', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
 
     $this->actingAs($editor, 'sanctum')
-         ->patchJson("/api/assets/{$asset->id}", [
-             'title' => 'Título actualizado',
-             'tags'  => 'nuevo, tag',
-         ])
-         ->assertStatus(200)
-         ->assertJsonPath('data.metadata.title', 'Título actualizado');
+        ->patchJson("/api/assets/{$asset->id}", [
+            'title' => 'Título actualizado',
+            'tags' => 'nuevo, tag',
+        ])
+        ->assertStatus(200)
+        ->assertJsonPath('data.metadata.title', 'Título actualizado');
 });

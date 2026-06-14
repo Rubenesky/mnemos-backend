@@ -19,13 +19,12 @@ use Illuminate\Support\Facades\Cache;
  * Route (auth:sanctum):
  *   GET /api/reports/impact-dashboard  — admin only
  *
- * @package App\Http\Controllers\Api
  * @author  RJC
  */
 class ImpactDashboardController extends Controller
 {
     /**
-     * @param ImpactDashboardService $dashboard  Aggregates all impact metrics
+     * @param  ImpactDashboardService  $dashboard  Aggregates all impact metrics
      */
     public function __construct(
         private readonly ImpactDashboardService $dashboard,
@@ -38,14 +37,14 @@ class ImpactDashboardController extends Controller
      * assets. Results are cached for 10 minutes (600 s).
      *
      * @return JsonResponse 200 {
-     *   data: {
-     *     summary:    { total_assets, public_assets, total_downloads,
-     *                   consents_granted, alt_texts_generated, hours_saved },
-     *     trends:     { assets_last_30_days, consents_last_30_days, assets_by_month },
-     *     top_assets: [ { id, title, thumbnail, view_count } ],
-     *   }
-     * }
-     * | 403 if the authenticated user is not an admin
+     *                      data: {
+     *                      summary:    { total_assets, public_assets, total_downloads,
+     *                      consents_granted, alt_texts_generated, hours_saved },
+     *                      trends:     { assets_last_30_days, consents_last_30_days, assets_by_month },
+     *                      top_assets: [ { id, title, thumbnail, view_count } ],
+     *                      }
+     *                      }
+     *                      | 403 if the authenticated user is not an admin
      */
     public function dashboard(): JsonResponse
     {

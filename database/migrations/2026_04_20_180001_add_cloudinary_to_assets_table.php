@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('assets', function (Blueprint $table) {
-            if (!Schema::hasColumn('assets', 'cloudinary_public_id')) {
+            if (! Schema::hasColumn('assets', 'cloudinary_public_id')) {
                 $table->string('cloudinary_public_id')->nullable()->after('path');
             }
-            if (!Schema::hasColumn('assets', 'cloudinary_url')) {
+            if (! Schema::hasColumn('assets', 'cloudinary_url')) {
                 $table->string('cloudinary_url')->nullable()->after('cloudinary_public_id');
             }
         });

@@ -32,7 +32,7 @@ return [
     ],
 
     'gemini' => [
-    'key' => env('GEMINI_API_KEY'),
+        'key' => env('GEMINI_API_KEY'),
     ],
 
 ];

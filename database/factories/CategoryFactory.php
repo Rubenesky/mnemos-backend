@@ -12,11 +12,11 @@ class CategoryFactory extends Factory
         $name = $this->faker->unique()->words(2, true);
 
         return [
-            'name'        => ucfirst($name),
-            'slug'        => Str::slug($name) . '-' . $this->faker->unique()->numberBetween(1, 99999),
+            'name' => ucfirst($name),
+            'slug' => Str::slug($name).'-'.$this->faker->unique()->numberBetween(1, 99999),
             'description' => $this->faker->optional()->sentence(),
-            'parent_id'   => null,
-            'is_public'   => false,
+            'parent_id' => null,
+            'is_public' => false,
         ];
     }
 }

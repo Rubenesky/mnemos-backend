@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Stores AI-generated and user-edited metadata (title, description, tags) for a digital asset.
- *
- * @package App\Models
  */
 class AssetMetadata extends Model
 {

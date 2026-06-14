@@ -18,18 +18,19 @@ use Illuminate\Http\Response;
  *
  * Both endpoints are unauthenticated (public).
  *
- * @package App\Http\Controllers\Api
  * @author  RJC
  */
 class EmbedController extends Controller
 {
     /** Allowed values for each query parameter. */
     private const THEMES = ['light', 'dark'];
-    private const COLS   = [2, 3, 4];
+
+    private const COLS = [2, 3, 4];
+
     private const LIMITS = [6, 12, 24];
 
     /**
-     * @param OrganizationSettingsService $settings  Provides org_name for the embedded gallery title
+     * @param  OrganizationSettingsService  $settings  Provides org_name for the embedded gallery title
      */
     public function __construct(
         private readonly OrganizationSettingsService $settings,
@@ -43,21 +44,20 @@ class EmbedController extends Controller
      *   cols   — 2|3|4       (default: 3)
      *   limit  — 6|12|24     (default: 12)
      *
-     * @param  string   $slug     Public collection slug
-     * @param  Request  $request
-     * @return Response           Rendered Blade HTML page
+     * @param  string  $slug  Public collection slug
+     * @return Response Rendered Blade HTML page
      */
     public function gallery(string $slug, Request $request): Response
     {
         $theme = $this->resolveTheme($request);
-        $cols  = $this->resolveCols($request);
+        $cols = $this->resolveCols($request);
         $limit = $this->resolveLimit($request);
 
         $collection = Category::where('slug', $slug)
             ->where('is_public', true)
             ->firstOrFail();
 
-        $assets  = $collection->assets()
+        $assets = $collection->assets()
             ->where('is_public', true)
             ->where('status', 'processed')
             ->with('metadata')
@@ -75,9 +75,8 @@ class EmbedController extends Controller
      *
      * Query parameters are forwarded into the snippet src URL (theme, cols, limit).
      *
-     * @param  string   $slug     Public collection slug
-     * @param  Request  $request
-     * @return JsonResponse       { snippet: string, preview_url: string }
+     * @param  string  $slug  Public collection slug
+     * @return JsonResponse { snippet: string, preview_url: string }
      */
     public function embedCode(string $slug, Request $request): JsonResponse
     {
@@ -86,24 +85,24 @@ class EmbedController extends Controller
             ->firstOrFail();
 
         $theme = $this->resolveTheme($request);
-        $cols  = $this->resolveCols($request);
+        $cols = $this->resolveCols($request);
         $limit = $this->resolveLimit($request);
 
-        $base       = rtrim(config('app.url'), '/');
+        $base = rtrim(config('app.url'), '/');
         $previewUrl = "{$base}/api/public/embed/{$slug}?"
-                    . http_build_query(['theme' => $theme, 'cols' => $cols, 'limit' => $limit]);
+                    .http_build_query(['theme' => $theme, 'cols' => $cols, 'limit' => $limit]);
 
         $snippet = '<iframe'
-                 . ' src="' . $previewUrl . '"'
-                 . ' width="100%"'
-                 . ' height="600"'
-                 . ' frameborder="0"'
-                 . ' loading="lazy"'
-                 . ' title="' . e($collection->name) . '"'
-                 . '></iframe>';
+                 .' src="'.$previewUrl.'"'
+                 .' width="100%"'
+                 .' height="600"'
+                 .' frameborder="0"'
+                 .' loading="lazy"'
+                 .' title="'.e($collection->name).'"'
+                 .'></iframe>';
 
         return response()->json([
-            'snippet'     => $snippet,
+            'snippet' => $snippet,
             'preview_url' => $previewUrl,
         ]);
     }
@@ -111,33 +110,36 @@ class EmbedController extends Controller
     /**
      * Resolve and validate the theme query parameter.
      *
-     * @return string  light|dark
+     * @return string light|dark
      */
     private function resolveTheme(Request $request): string
     {
         $value = $request->query('theme', 'light');
+
         return in_array($value, self::THEMES, true) ? $value : 'light';
     }
 
     /**
      * Resolve and validate the cols query parameter.
      *
-     * @return int  2|3|4
+     * @return int 2|3|4
      */
     private function resolveCols(Request $request): int
     {
         $value = (int) $request->query('cols', 3);
+
         return in_array($value, self::COLS, true) ? $value : 3;
     }
 
     /**
      * Resolve and validate the limit query parameter.
      *
-     * @return int  6|12|24
+     * @return int 6|12|24
      */
     private function resolveLimit(Request $request): int
     {
         $value = (int) $request->query('limit', 12);
+
         return in_array($value, self::LIMITS, true) ? $value : 12;
     }
 }

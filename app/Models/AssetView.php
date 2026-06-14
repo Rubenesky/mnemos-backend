@@ -12,12 +12,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * created_at; there is no updated_at. IPs are stored as SHA-256 hashes
  * so the original address is never persisted (GDPR compliance).
  *
- * @property int         $id
- * @property int         $asset_id
+ * @property int $id
+ * @property int $asset_id
  * @property \Illuminate\Support\Carbon $viewed_at
  * @property string|null $ip_hash
  *
- * @package App\Models
  * @author  RJC
  */
 class AssetView extends Model

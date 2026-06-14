@@ -20,12 +20,12 @@ class OrganizationSettingsSeeder extends Seeder
     public function run(): void
     {
         $defaults = [
-            'org_name'        => 'Mi Organización',
+            'org_name' => 'Mi Organización',
             'org_description' => '',
-            'org_website'     => '',
-            'org_email'       => '',
-            'org_logo_url'    => '',
-            'org_locale'      => 'es',
+            'org_website' => '',
+            'org_email' => '',
+            'org_logo_url' => '',
+            'org_locale' => 'es',
         ];
 
         foreach ($defaults as $key => $value) {

@@ -22,10 +22,10 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@mnemos.app'],
             [
-                'name'         => 'Admin',
-                'password'     => Hash::make('Admin1234!'),
-                'role'         => 'admin',
-                'is_active'    => true,
+                'name' => 'Admin',
+                'password' => Hash::make('Admin1234!'),
+                'role' => 'admin',
+                'is_active' => true,
                 'is_protected' => true,
             ]
         );

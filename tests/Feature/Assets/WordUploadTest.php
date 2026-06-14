@@ -19,15 +19,15 @@ beforeEach(function () {
     $this->mock(CloudinaryService::class, function ($mock) {
         $mock->shouldReceive('upload')->andReturn([
             'public_id' => 'test/fake-docx-id',
-            'url'       => 'https://res.cloudinary.com/test/raw/upload/fake.docx',
+            'url' => 'https://res.cloudinary.com/test/raw/upload/fake.docx',
         ]);
     });
 
     $this->mock(GeminiService::class, function ($mock) {
         $mock->shouldReceive('generateAssetMetadata')->andReturn([
-            'title'       => 'Documento Word de prueba',
+            'title' => 'Documento Word de prueba',
             'description' => 'Contenido del Word de prueba',
-            'tags'        => ['word', 'documento', 'prueba'],
+            'tags' => ['word', 'documento', 'prueba'],
         ]);
         $mock->shouldReceive('generateAltText')->andReturn('');
     });
@@ -38,10 +38,10 @@ beforeEach(function () {
 
     $this->mock(TextExtractionService::class, function ($mock) {
         $mock->shouldReceive('isSupported')
-             ->andReturnUsing(fn($mime) => in_array($mime, [
-                 'application/msword',
-                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-             ]));
+            ->andReturnUsing(fn ($mime) => in_array($mime, [
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ]));
         $mock->shouldReceive('extract')->andReturn('Texto extraído del documento Word de prueba.');
     });
 });
@@ -52,9 +52,9 @@ it('sube un DOCX válido y devuelve 201', function () {
     $file = UploadedFile::fake()->create('informe.docx', 300, $mime);
 
     $this->actingAs($user, 'sanctum')
-         ->postJson('/api/assets', ['file' => $file])
-         ->assertStatus(201)
-         ->assertJsonStructure(['data' => ['id', 'url', 'status']]);
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertStatus(201)
+        ->assertJsonStructure(['data' => ['id', 'url', 'status']]);
 });
 
 it('sube un DOC válido y devuelve 201', function () {
@@ -62,9 +62,9 @@ it('sube un DOC válido y devuelve 201', function () {
     $file = UploadedFile::fake()->create('informe.doc', 300, 'application/msword');
 
     $this->actingAs($user, 'sanctum')
-         ->postJson('/api/assets', ['file' => $file])
-         ->assertStatus(201)
-         ->assertJsonStructure(['data' => ['id', 'url', 'status']]);
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertStatus(201)
+        ->assertJsonStructure(['data' => ['id', 'url', 'status']]);
 });
 
 it('el asset DOCX tiene metadatos generados por IA', function () {
@@ -73,8 +73,8 @@ it('el asset DOCX tiene metadatos generados por IA', function () {
     $file = UploadedFile::fake()->create('memoria.docx', 400, $mime);
 
     $response = $this->actingAs($user, 'sanctum')
-                     ->postJson('/api/assets', ['file' => $file])
-                     ->assertStatus(201);
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertStatus(201);
 
     $assetId = $response->json('data.id');
     expect(AssetMetadata::where('asset_id', $assetId)->exists())->toBeTrue();
@@ -86,10 +86,10 @@ it('guarda el mime_type correcto para DOCX', function () {
     $file = UploadedFile::fake()->create('contrato.docx', 200, $mime);
 
     $response = $this->actingAs($user, 'sanctum')
-                     ->postJson('/api/assets', ['file' => $file])
-                     ->assertStatus(201);
+        ->postJson('/api/assets', ['file' => $file])
+        ->assertStatus(201);
 
     $assetId = $response->json('data.id');
-    $asset   = Asset::find($assetId);
+    $asset = Asset::find($assetId);
     expect($asset->mime_type)->toBe($mime);
 });

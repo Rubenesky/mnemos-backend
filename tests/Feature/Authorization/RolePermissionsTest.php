@@ -11,46 +11,46 @@ it('admin puede borrar un asset', function () {
     $asset = Asset::factory()->create();
 
     $this->actingAs($admin, 'sanctum')
-         ->deleteJson("/api/assets/{$asset->id}")
-         ->assertStatus(200);
+        ->deleteJson("/api/assets/{$asset->id}")
+        ->assertStatus(200);
 });
 
 it('editor no puede borrar un asset', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create();
+    $asset = Asset::factory()->create();
 
     $this->actingAs($editor, 'sanctum')
-         ->deleteJson("/api/assets/{$asset->id}")
-         ->assertStatus(403);
+        ->deleteJson("/api/assets/{$asset->id}")
+        ->assertStatus(403);
 });
 
 it('viewer no puede borrar un asset', function () {
     $viewer = User::factory()->create(['role' => 'viewer']);
-    $asset  = Asset::factory()->create();
+    $asset = Asset::factory()->create();
 
     $this->actingAs($viewer, 'sanctum')
-         ->deleteJson("/api/assets/{$asset->id}")
-         ->assertStatus(403);
+        ->deleteJson("/api/assets/{$asset->id}")
+        ->assertStatus(403);
 });
 
 it('viewer no puede editar metadatos', function () {
     $viewer = User::factory()->create(['role' => 'viewer']);
-    $asset  = Asset::factory()->create();
+    $asset = Asset::factory()->create();
 
     $this->actingAs($viewer, 'sanctum')
-         ->patchJson("/api/assets/{$asset->id}", ['title' => 'Nuevo título'])
-         ->assertStatus(403);
+        ->patchJson("/api/assets/{$asset->id}", ['title' => 'Nuevo título'])
+        ->assertStatus(403);
 });
 
 it('editor puede editar metadatos de su propio asset', function () {
     $editor = User::factory()->create(['role' => 'editor']);
-    $asset  = Asset::factory()->create(['user_id' => $editor->id]);
+    $asset = Asset::factory()->create(['user_id' => $editor->id]);
 
     $this->actingAs($editor, 'sanctum')
-         ->patchJson("/api/assets/{$asset->id}", [
-             'title' => 'Título editado',
-             'tags'  => 'tag1, tag2',
-         ])
-         ->assertStatus(200)
-         ->assertJsonPath('data.metadata.title', 'Título editado');
+        ->patchJson("/api/assets/{$asset->id}", [
+            'title' => 'Título editado',
+            'tags' => 'tag1, tag2',
+        ])
+        ->assertStatus(200)
+        ->assertJsonPath('data.metadata.title', 'Título editado');
 });

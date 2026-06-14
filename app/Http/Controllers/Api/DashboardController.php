@@ -10,15 +10,13 @@ class DashboardController extends Controller
 {
     /**
      * Return aggregated asset counts for the dashboard stats panel.
-     *
-     * @return JsonResponse
      */
     public function stats(): JsonResponse
     {
         return response()->json([
-            'total'     => Asset::count(),
+            'total' => Asset::count(),
             'processed' => Asset::where('status', 'processed')->count(),
-            'pending'   => Asset::where('status', 'pending')->count(),
+            'pending' => Asset::where('status', 'pending')->count(),
         ]);
     }
 }
