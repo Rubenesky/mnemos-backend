@@ -1,0 +1,32 @@
+FROM php:8.2-fpm-alpine
+
+# System dependencies required to build the PHP extensions below
+RUN apk add --no-cache \
+        postgresql-dev \
+        libzip-dev \
+        libpng-dev \
+        libjpeg-turbo-dev \
+        freetype-dev \
+        icu-dev \
+        oniguruma-dev \
+        $PHPIZE_DEPS \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip intl
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Copy only composer manifests first (better layer caching)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader
+
+# Copy the rest of the application code
+COPY . .
+
+RUN mkdir -p /var/www/html/bootstrap/cache && chown -R www-data:www-data /var/www/html/bootstrap/cache
+
+RUN composer dump-autoload --optimize
+
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

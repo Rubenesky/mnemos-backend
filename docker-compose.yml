@@ -1,4 +1,19 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mnemos-app
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - mnemos_network
+    volumes:
+      - .:/var/www/html
+    env_file:
+      - .env.docker
+
   db:
     image: postgres:16-alpine
     container_name: mnemos-db
