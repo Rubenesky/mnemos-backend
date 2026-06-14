@@ -1,0 +1,8 @@
+name: mnemos
+version: '1.0.0'
+config-version: 2
+profile: mnemos
+model-paths: ["models"]
+models:
+  mnemos:
+    +materialized: view

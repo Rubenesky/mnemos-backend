@@ -1,0 +1,12 @@
+mnemos:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: db
+      port: 5432
+      user: mnemos
+      password: ""
+      dbname: mnemos
+      schema: analytics
+      threads: 1

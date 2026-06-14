@@ -1,0 +1,11 @@
+version: 2
+sources:
+  - name: mnemos
+    database: mnemos
+    schema: public
+    tables:
+      - name: assets
+      - name: users
+      - name: consents
+      - name: asset_views
+      - name: categories

@@ -55,6 +55,19 @@ services:
     volumes:
       - redis_data:/data
 
+  dbt:
+    image: ghcr.io/dbt-labs/dbt-postgres:1.8.latest
+    container_name: mnemos-dbt
+    working_dir: /usr/app/dbt
+    volumes:
+      - ./dbt:/usr/app/dbt
+    depends_on:
+      - db
+    networks:
+      - mnemos_network
+    profiles: ["tools"]
+    command: ["run"]
+
   metabase:
     image: metabase/metabase:latest
     container_name: mnemos-metabase
