@@ -41,4 +41,6 @@ jobs:
       # dev. PgSQL-specific SQL dialect divergence is validated at deploy time
       # against Supabase/Render, not in CI.
       - name: Run tests
+        env:
+          DB_SSLMODE: disable
         run: ./vendor/bin/pest
