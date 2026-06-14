@@ -11,21 +11,6 @@ env:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: mnemos_test
-          POSTGRES_USER: mnemos
-          POSTGRES_PASSWORD: secret
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - uses: actions/checkout@v5
@@ -34,7 +19,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: pdo, pdo_pgsql, pgsql, mbstring, zip, bcmath, redis
+          extensions: pdo, pdo_sqlite, sqlite3, mbstring, zip, bcmath, redis
           coverage: none
 
       - name: Install dependencies
@@ -52,13 +37,8 @@ jobs:
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse --memory-limit=256M
 
+      # Tests use sqlite :memory: as configured in phpunit.xml — matches local
+      # dev. PgSQL-specific SQL dialect divergence is validated at deploy time
+      # against Supabase/Render, not in CI.
       - name: Run tests
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: mnemos_test
-          DB_USERNAME: mnemos
-          DB_PASSWORD: secret
-          DB_SSLMODE: disable
-        run: php artisan test --env=testing
+        run: ./vendor/bin/pest
