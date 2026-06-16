@@ -67,7 +67,7 @@ it('rechaza archivos mayores de 10MB con 422', function () {
 it('detecta duplicado exacto por hash y devuelve 409', function () {
     $user = User::factory()->create(['role' => 'editor']);
     $file = UploadedFile::fake()->image('foto.jpg');
-    $hash = md5_file($file->getRealPath());
+    $hash = hash_file('sha256', $file->getRealPath());
 
     Asset::factory()->create(['file_hash' => $hash]);
 

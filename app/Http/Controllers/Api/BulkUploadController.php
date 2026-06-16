@@ -133,7 +133,7 @@ class BulkUploadController extends Controller
 
         try {
             // Exact-duplicate detection by hash
-            $fileHash = md5_file($file->getRealPath());
+            $fileHash = hash_file('sha256', $file->getRealPath());
             if (Asset::where('file_hash', $fileHash)->exists()) {
                 return $this->errorResult($originalName, 'Duplicate file — already uploaded.');
             }

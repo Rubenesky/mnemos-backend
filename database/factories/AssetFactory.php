@@ -17,7 +17,7 @@ class AssetFactory extends Factory
             'mime_type' => 'image/jpeg',
             'size' => $this->faker->numberBetween(1000, 5000000),
             'path' => 'assets/'.Str::uuid().'.jpg',
-            'file_hash' => md5(Str::random(32)),
+            'file_hash' => hash('sha256', Str::random(32)),
             'status' => 'processed',
         ];
     }

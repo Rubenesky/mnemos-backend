@@ -85,7 +85,7 @@ class AssetApiController extends Controller
         $file = $request->file('file');
 
         // Exact duplicate detection by hash
-        $fileHash = md5_file($file->getRealPath());
+        $fileHash = hash_file('sha256', $file->getRealPath());
         $existingAsset = Asset::where('file_hash', $fileHash)->first();
 
         if ($existingAsset) {
